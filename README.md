@@ -1,0 +1,2 @@
+# Intelligent_Farm_Operations_Platform_with_Smart_Agro_Precision_System
+Intelligent Farm Operations Platform with Smart Agro Precision System
