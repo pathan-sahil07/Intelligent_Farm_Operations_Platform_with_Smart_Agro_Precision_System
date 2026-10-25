@@ -1,0 +1,11 @@
+@"
+Rice requires sufficient water, especially during its early growth stages. Farmers should monitor soil moisture and avoid unnecessary over-irrigation.
+
+Tomato plants can be affected by early blight, late blight, and leaf spot diseases. Farmers should inspect leaves regularly and seek appropriate treatment when symptoms appear.
+
+Soil health is important for crop growth. Farmers should test soil nutrients and pH before selecting fertilizers.
+
+Drip irrigation delivers water directly to plant roots and can reduce water wastage compared with some conventional irrigation methods.
+
+Farmers should choose crops based on soil type, climate, rainfall, water availability, and local growing conditions.
+"@ | Set-Content -Path "backend\models\aimodel\documents\agriculture.txt"
