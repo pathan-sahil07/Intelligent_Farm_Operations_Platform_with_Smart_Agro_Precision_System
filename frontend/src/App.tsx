@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { api, type Crop as ApiCrop, type IrrigationSchedule, type HarvestRecord } from './services/api'
+import AgriculturalChat from './components/AgriculturalChat'
 import './App.css'
 
 type Crop = {
@@ -23,7 +24,7 @@ type Irrigation = {
   status: 'Scheduled' | 'Completed' | 'Skipped'
 }
 
-type Tab = 'Overview' | 'Crop Lifecycle' | 'Irrigation' | 'Harvest Records'
+type Tab = 'Overview' | 'Crop Lifecycle' | 'Irrigation' | 'Harvest Records' | 'AI Farm Assistant'
 
 const stages = ['Seedling', 'Vegetative', 'Flowering', 'Fruiting', 'Mature']
 
@@ -216,6 +217,7 @@ function App() {
     { name: 'Crop Lifecycle', icon: '♧' },
     { name: 'Irrigation', icon: '♧' },
     { name: 'Harvest Records', icon: '▤' },
+    { name: 'AI Farm Assistant', icon: '✳' },
   ]
 
   return (
@@ -311,6 +313,8 @@ function App() {
                 </tbody></table></div>}
             </section>
           )}
+
+          {tab === 'AI Farm Assistant' && <AgriculturalChat />}
 
           <footer className="page-footer">INTELLIGENT FARM OPERATIONS PLATFORM <span>•</span> CROP OPERATIONS MODULE</footer>
         </section>

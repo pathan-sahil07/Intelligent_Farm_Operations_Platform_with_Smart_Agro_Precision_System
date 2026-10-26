@@ -2,8 +2,10 @@ import os
 from pathlib import Path
 
 import numpy as np
+
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from google import genai
 from pydantic import BaseModel
 
@@ -18,15 +20,26 @@ if not API_KEY:
         "GEMINI_API_KEY is missing from your .env file."
     )
 
-client = genai.Client(api_key=API_KEY)
+client = genai.Client(api_key=API_KEY, http_options={"timeout": 10000})
 
 app = FastAPI(title="Agricultural RAG Chatbot")
 
-DOCUMENT_PATH = BASE_DIR / "documents" / "agriculture.txt"
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+    ],
+    allow_credentials=False,
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["Content-Type"],
+)
 
+
+DOCUMENT_PATH = BASE_DIR / "documents" / "agriculture.txt"
 # Model names can change depending on availability and account access.
 EMBEDDING_MODEL = "gemini-embedding-001"
-CHAT_MODEL = "gemini-2.5-flash"
+CHAT_MODEL = "gemini-3.1-flash-lite"
 
 
 def load_documents():
@@ -54,13 +67,16 @@ documents = load_documents()
 
 def create_embeddings(texts):
     embeddings = []
+    print(f"DEBUG: Embedding {len(texts)} text(s)", flush=True)
 
     for text in texts:
+        print("DEBUG: Starting embedding request", flush=True)
         result = client.models.embed_content(
             model=EMBEDDING_MODEL,
             contents=text,
         )
 
+        print("DEBUG: Embedding request completed", flush=True)
         embeddings.append(result.embeddings[0].values)
 
     return np.array(embeddings)
@@ -118,6 +134,7 @@ def chat(request: ChatRequest):
             documents[i] for i in top_indices
         )
 
+        print("DEBUG: Starting answer generation", flush=True)
         # Generate an answer using Gemini.
         response = client.models.generate_content(
             model=CHAT_MODEL,

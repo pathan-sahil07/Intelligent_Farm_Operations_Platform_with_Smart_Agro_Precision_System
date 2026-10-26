@@ -1,11 +1,23 @@
-@"
-Rice requires sufficient water, especially during its early growth stages. Farmers should monitor soil moisture and avoid unnecessary over-irrigation.
+Soil Health
 
-Tomato plants can be affected by early blight, late blight, and leaf spot diseases. Farmers should inspect leaves regularly and seek appropriate treatment when symptoms appear.
+Healthy soil supports crop growth by providing nutrients, water, air, and a suitable environment for roots. Farmers should test soil pH and nutrient levels before selecting fertilizers. Adding suitable organic matter, rotating crops, using cover crops, and preventing soil erosion can help maintain soil health. Fertilizer and soil amendments should be selected according to soil-test results and local agricultural recommendations.
 
-Soil health is important for crop growth. Farmers should test soil nutrients and pH before selecting fertilizers.
+Crop Selection
 
-Drip irrigation delivers water directly to plant roots and can reduce water wastage compared with some conventional irrigation methods.
+Farmers should select crops based on soil type, local climate, rainfall, water availability, growing season, and local growing conditions. Crop rotation can help diversify production and may reduce the buildup of certain pests and diseases. Local agricultural experts can help farmers choose suitable crop varieties.
 
-Farmers should choose crops based on soil type, climate, rainfall, water availability, and local growing conditions.
-"@ | Set-Content -Path "backend\models\aimodel\documents\agriculture.txt"
+Irrigation Management
+
+Farmers should monitor soil moisture and crop water requirements when scheduling irrigation. Rice generally requires careful water management, especially during establishment and early growth. Avoid unnecessary over-irrigation, which can waste water and contribute to nutrient loss. Irrigation schedules should consider rainfall, soil type, crop stage, and available water.
+
+Pest and Disease Management
+
+Farmers should regularly inspect crops for pests and disease symptoms. Integrated pest management combines field monitoring, preventive practices, biological controls, and appropriate pesticide use when necessary. Any pesticide should be approved for the intended crop and pest and applied according to its label and local regulations.
+
+Fertilizer Management
+
+Fertilizer decisions should be based on soil testing, crop nutrient requirements, growth stage, and local recommendations. Applying more fertilizer than needed can waste money and contribute to environmental pollution. Farmers should follow recommended application rates and timings.
+
+Water Conservation
+
+Water conservation practices include irrigation scheduling, repairing leaks, maintaining irrigation equipment, mulching where appropriate, and using methods suited to the crop and soil. Farmers should consider rainfall forecasts and field conditions before irrigating.
