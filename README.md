@@ -57,6 +57,15 @@ Existing farm, crop, irrigation, harvest, plot, worker, soil-test, and document 
 
 The Gemini assistant remains an independent FastAPI service under `backend/models/aimodel`; its credentials are server-side and its `/chat` response includes retrieved source chunks.
 
+If PostgreSQL is not installed locally, use the isolated in-memory demo profile:
+
+```bash
+cd backend
+mvn spring-boot:run -Dspring-boot.run.profiles=demo
+```
+
+The demo profile is for local UI/API development only. Production and Docker use PostgreSQL/PostGIS with Flyway.
+
 ## Configuration
 
 `DATABASE_URL`, `DATABASE_USERNAME`, `DATABASE_PASSWORD`, `DOCUMENTS_DIRECTORY`, `WEATHER_PROVIDER_URL`, and `GEMINI_API_KEY` are environment variables. Never commit real values.
