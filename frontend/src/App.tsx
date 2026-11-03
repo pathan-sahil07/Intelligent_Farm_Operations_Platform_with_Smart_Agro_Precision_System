@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { api, type Crop as ApiCrop, type IrrigationSchedule, type HarvestRecord } from './services/api'
 import AgriculturalChat from './components/AgriculturalChat'
+import { FarmManagementPage } from './features/farm-management/components/FarmManagementPage'
 import './App.css'
 
 type Crop = {
@@ -24,7 +25,7 @@ type Irrigation = {
   status: 'Scheduled' | 'Completed' | 'Skipped'
 }
 
-type Tab = 'Overview' | 'Crop Lifecycle' | 'Irrigation' | 'Harvest Records' | 'AI Farm Assistant'
+type Tab = 'Overview' | 'Farm Management' | 'Crop Lifecycle' | 'Irrigation' | 'Harvest Records' | 'AI Farm Assistant'
 
 const stages = ['Seedling', 'Vegetative', 'Flowering', 'Fruiting', 'Mature']
 
@@ -214,6 +215,7 @@ function App() {
 
   const navItems: { name: Tab; icon: string }[] = [
     { name: 'Overview', icon: '◫' },
+    { name: 'Farm Management', icon: '⌂' },
     { name: 'Crop Lifecycle', icon: '♧' },
     { name: 'Irrigation', icon: '♧' },
     { name: 'Harvest Records', icon: '▤' },
@@ -269,6 +271,7 @@ function App() {
             <Stat label="Water used" value={`${completedWater.toLocaleString()} L`} detail="Recorded completed events" icon="↗" />
           </div>
 
+          {tab === 'Farm Management' && <FarmManagementPage />}
           {tab === 'Overview' && (
             <div className="overview-grid">
               <section className="panel crop-panel">
