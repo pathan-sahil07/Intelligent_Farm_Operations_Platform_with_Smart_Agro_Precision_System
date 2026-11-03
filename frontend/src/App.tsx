@@ -4,6 +4,7 @@ import AgriculturalChat from './components/AgriculturalChat'
 import { FarmManagementPage } from './features/farm-management/components/FarmManagementPage'
 import { FarmDetailPage } from './features/farm-management/components/FarmDetailPage'
 import { useLocation, useNavigate } from 'react-router-dom'
+import OperationalModulesPanel from './components/OperationalModulesPanel'
 import './App.css'
 
 type Crop = {
@@ -27,7 +28,7 @@ type Irrigation = {
   status: 'Scheduled' | 'Completed' | 'Skipped'
 }
 
-type Tab = 'Overview' | 'Farm Management' | 'Crop Lifecycle' | 'Irrigation' | 'Harvest Records' | 'AI Farm Assistant'
+type Tab = 'Overview' | 'Farm Management' | 'Crop Lifecycle' | 'Irrigation' | 'Harvest Records' | 'AI Farm Assistant' | 'Resources' | 'Inventory' | 'Equipment' | 'Weather' | 'GIS Farm Mapping' | 'Analytics'
 
 const stages = ['Seedling', 'Vegetative', 'Flowering', 'Fruiting', 'Mature']
 
@@ -98,7 +99,8 @@ function App() {
   }, [])
 
   useEffect(() => {
-    void refreshData()
+    const timer = window.setTimeout(() => void refreshData(), 0)
+    return () => window.clearTimeout(timer)
   }, [refreshData])
 
   const filteredCrops = useMemo(() => crops.filter(c =>
@@ -224,6 +226,12 @@ function App() {
     { name: 'Irrigation', icon: '♧' },
     { name: 'Harvest Records', icon: '▤' },
     { name: 'AI Farm Assistant', icon: '✳' },
+    { name: 'Resources', icon: '◈' },
+    { name: 'Inventory', icon: '▦' },
+    { name: 'Equipment', icon: '⚙' },
+    { name: 'Weather', icon: '☼' },
+    { name: 'GIS Farm Mapping', icon: '⌖' },
+    { name: 'Analytics', icon: '▥' },
   ]
 
   return (
@@ -299,6 +307,9 @@ function App() {
                 </div>
               </section>
             </div>
+          )}
+          {(['Resources', 'Inventory', 'Equipment', 'Weather', 'GIS Farm Mapping', 'Analytics'] as const).includes(tab as never) && (
+            <OperationalModulesPanel module={tab as 'Analytics' | 'Inventory' | 'Equipment' | 'Resources' | 'Weather' | 'GIS Farm Mapping'} />
           )}
 
           {tab === 'Crop Lifecycle' && (

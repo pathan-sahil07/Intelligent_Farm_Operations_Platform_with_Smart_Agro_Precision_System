@@ -54,6 +54,38 @@ export interface HarvestRecord {
   notes: string | null;
 }
 
+export interface AnalyticsOverview {
+  totalFarms: number;
+  totalPlots: number;
+  activeCrops: number;
+  harvestRecords: number;
+  irrigationSchedules: number;
+  inventoryItems: number;
+  totalHarvestKg: number;
+  completedIrrigation: number;
+}
+
+export interface InventoryItem {
+  id: number;
+  farmId: number | null;
+  name: string;
+  category: string;
+  unit: string;
+  quantity: number;
+  reorderLevel: number;
+  unitCost: number | null;
+  expiryDate: string | null;
+}
+
+export interface Equipment {
+  id: number;
+  farmId: number | null;
+  name: string;
+  category: string;
+  identifier: string | null;
+  status: string;
+}
+
 export const api = {
   getCrops: () => request<Crop[]>('/crops'),
 
@@ -110,4 +142,7 @@ export const api = {
   }),
 
   getHarvests: () => request<HarvestRecord[]>('/harvests'),
+  getAnalytics: () => request<AnalyticsOverview>('/analytics/overview'),
+  getInventory: () => request<InventoryItem[]>('/inventory'),
+  getEquipment: () => request<Equipment[]>('/equipment'),
 };

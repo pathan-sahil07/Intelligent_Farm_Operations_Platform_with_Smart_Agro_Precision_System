@@ -20,6 +20,9 @@ export function useRemote<T>(load: (signal: AbortSignal) => Promise<T>) {
       .finally(() => setLoading(false))
     return () => controller.abort()
   }, [load])
-  useEffect(() => reload(), [reload])
+  useEffect(() => {
+    const timer = window.setTimeout(() => reload(), 0)
+    return () => window.clearTimeout(timer)
+  }, [reload])
   return { data, error, loading, reload }
 }

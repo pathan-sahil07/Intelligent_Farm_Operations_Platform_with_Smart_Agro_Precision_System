@@ -12,6 +12,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
+@Table(name = "soil_tests")
 @Getter @Setter @NoArgsConstructor
 public class SoilTest {
 

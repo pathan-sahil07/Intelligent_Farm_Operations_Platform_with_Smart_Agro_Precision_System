@@ -28,7 +28,11 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:5173",
+        "http://localhost:5174",
+        "http://localhost:5175",
         "http://127.0.0.1:5173",
+        "http://127.0.0.1:5174",
+        "http://127.0.0.1:5175",
     ],
     allow_credentials=False,
     allow_methods=["GET", "POST", "OPTIONS"],
@@ -112,6 +116,11 @@ def chat(request: ChatRequest):
             status_code=400,
             detail="Question cannot be empty.",
         )
+    if len(question) > 2000:
+        raise HTTPException(
+            status_code=400,
+            detail="Question must be 2000 characters or fewer.",
+        )
 
     try:
         # Convert the question into an embedding.
@@ -153,8 +162,8 @@ def chat(request: ChatRequest):
             sources=[documents[i] for i in top_indices],
         )
 
-    except Exception as exc:
+    except Exception:
         raise HTTPException(
             status_code=502,
-            detail=f"Gemini request failed: {str(exc)}",
+            detail="The agricultural assistant could not complete the request.",
         )

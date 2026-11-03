@@ -10,6 +10,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
+@Table(name = "farms")
 @Getter @Setter @NoArgsConstructor
 public class Farm {
 

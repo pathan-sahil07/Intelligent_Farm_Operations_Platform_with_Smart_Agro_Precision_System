@@ -28,3 +28,35 @@ cd frontend && npm run build
 
 Set `DOCUMENTS_DIRECTORY` to a writable directory for land-document uploads.
 Never put Gemini credentials in frontend code.
+# Intelligent Farm Operations Platform
+
+The platform is a React/Vite frontend, Java 21/Spring Boot business API, PostgreSQL/PostGIS database, and optional Python/Gemini RAG assistant.
+
+## Run locally
+
+1. Copy `.env.example` to `.env` and set `GEMINI_API_KEY` when using the assistant.
+2. Start PostgreSQL/PostGIS with `docker compose up database -d`.
+3. Build and start the API with `cd backend && mvn spring-boot:run`.
+4. Start the frontend with `cd frontend && npm install && npm run dev`.
+5. Open the Vite URL (normally `http://localhost:5173`).
+
+For the complete container stack:
+
+```bash
+mvn -f backend/pom.xml package -DskipTests
+docker compose up --build
+```
+
+The API is available at `http://localhost:8080`, Swagger UI at `/api/swagger-ui`, health at `/actuator/health`, and the frontend at `http://localhost:5173`.
+
+Flyway owns schema creation. The PostGIS image is required because migration `V3__postgis_and_operational_modules.sql` creates the spatial extension and indexes. Hibernate runs in `validate` mode and never recreates production tables.
+
+## Implemented API areas
+
+Existing farm, crop, irrigation, harvest, plot, worker, soil-test, and document APIs remain under `/api`. Operational APIs are available under `/api/inventory`, `/api/equipment`, `/api/resources`, `/api/weather`, `/api/gis`, and `/api/analytics/overview`.
+
+The Gemini assistant remains an independent FastAPI service under `backend/models/aimodel`; its credentials are server-side and its `/chat` response includes retrieved source chunks.
+
+## Configuration
+
+`DATABASE_URL`, `DATABASE_USERNAME`, `DATABASE_PASSWORD`, `DOCUMENTS_DIRECTORY`, `WEATHER_PROVIDER_URL`, and `GEMINI_API_KEY` are environment variables. Never commit real values.
