@@ -2,6 +2,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { api, type Crop as ApiCrop, type IrrigationSchedule, type HarvestRecord } from './services/api'
 import AgriculturalChat from './components/AgriculturalChat'
 import { FarmManagementPage } from './features/farm-management/components/FarmManagementPage'
+import { FarmDetailPage } from './features/farm-management/components/FarmDetailPage'
+import { useLocation, useNavigate } from 'react-router-dom'
 import './App.css'
 
 type Crop = {
@@ -55,6 +57,8 @@ function mapIrrigation(i: IrrigationSchedule): Irrigation {
 }
 
 function App() {
+  const location = useLocation()
+  const navigate = useNavigate()
   const [tab, setTab] = useState<Tab>('Overview')
   const [crops, setCrops] = useState<Crop[]>([])
   const [irrigation, setIrrigation] = useState<Irrigation[]>([])
@@ -230,7 +234,11 @@ function App() {
         <nav>
           {navItems.map(item => (
             <button key={item.name} className={`nav-item ${tab === item.name ? 'active' : ''}`}
-              onClick={() => { setTab(item.name); setNotice('') }}>
+              onClick={() => {
+                setTab(item.name)
+                setNotice('')
+                if (item.name === 'Farm Management') navigate('/farms')
+              }}>
               <span className="nav-icon">{item.icon}</span>{item.name}
             </button>
           ))}
@@ -271,7 +279,7 @@ function App() {
             <Stat label="Water used" value={`${completedWater.toLocaleString()} L`} detail="Recorded completed events" icon="↗" />
           </div>
 
-          {tab === 'Farm Management' && <FarmManagementPage />}
+          {location.pathname.startsWith('/farms/') ? <FarmDetailPage /> : location.pathname === '/farms' || tab === 'Farm Management' ? <FarmManagementPage /> : null}
           {tab === 'Overview' && (
             <div className="overview-grid">
               <section className="panel crop-panel">

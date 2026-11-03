@@ -22,7 +22,7 @@
     <java.version>17</java.version>
     <!-- newer Lombok so it works on JDK 21-25 (Boot 3.3.5 default is too old) -->
     <lombok.version>1.18.42</lombok.version>
-    <mockito.version>5.18.0</mockito.version>
+    <mockito.version>4.11.0</mockito.version>
   </properties>
 
   <dependencies>
