@@ -1,0 +1,404 @@
+/*
+ * FarmingJourney.css
+ * Scoped to .fj-* class names only.
+ * No existing selectors are modified here.
+ */
+
+/* ── Panel shell ──────────────────────────────────────────────────────────── */
+
+.fj-panel {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 16px;
+  background: linear-gradient(160deg, #243d28, #1a2e1e);
+  color: #edf5ed;
+  position: relative;
+  transition: background 0.45s ease;
+  box-shadow: 0 16px 48px rgba(18, 38, 20, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+/* ── Per-stage accent backgrounds (7 stages) ──────────────────────────────── */
+
+.fj-accent-soil {
+  background: linear-gradient(155deg, #3d2c1a 0%, #5a3e28 100%);
+}
+
+.fj-accent-sowing {
+  background: linear-gradient(155deg, #1e3822 0%, #2c5030 100%);
+}
+
+.fj-accent-germination {
+  background: linear-gradient(155deg, #1d3a1f 0%, #29552b 100%);
+}
+
+.fj-accent-irrigation {
+  background: linear-gradient(155deg, #18283d 0%, #1c3852 100%);
+}
+
+.fj-accent-growth {
+  background: linear-gradient(155deg, #1c3420 0%, #243c28 100%);
+}
+
+.fj-accent-mature {
+  background: linear-gradient(155deg, #3a3212 0%, #524419 100%);
+}
+
+.fj-accent-harvest {
+  background: linear-gradient(155deg, #3c2c0a 0%, #503c0e 100%);
+}
+
+/* ── Scene illustration ────────────────────────────────────────────────────── */
+
+.fj-scene {
+  width: 100%;
+  flex-shrink: 0;
+}
+
+.fj-scene-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 14px 14px 0 0;
+}
+
+/* ── Text content ─────────────────────────────────────────────────────────── */
+
+.fj-content {
+  flex: 1;
+  padding: 16px 20px 8px;
+  animation: fj-fade-up 0.32s ease both;
+}
+
+@keyframes fj-fade-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0);   }
+}
+
+.fj-header-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 5px;
+}
+
+.fj-label {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.fj-cycle-tag {
+  display: inline-block;
+  padding: 2px 7px;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.15);
+  color: #d1f2ba;
+  font-size: 9px;
+  font-weight: 650;
+  letter-spacing: 0.05em;
+}
+
+.fj-title {
+  margin: 0 0 3px;
+  color: #fff;
+  font-size: clamp(15px, 1.9vw, 20px);
+  font-weight: 750;
+  letter-spacing: -0.03em;
+  line-height: 1.2;
+}
+
+.fj-title-en {
+  margin: 0 0 8px;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+}
+
+.fj-points {
+  margin: 8px 0 0;
+  padding: 0 0 0 15px;
+  list-style: disc;
+  display: grid;
+  gap: 4px;
+}
+
+.fj-points li {
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+/* ── Navigation bar ───────────────────────────────────────────────────────── */
+
+.fj-nav-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 16px 14px;
+  flex-shrink: 0;
+}
+
+.fj-nav-btn {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.8);
+  cursor: pointer;
+  transition: background 130ms ease, border-color 130ms ease;
+}
+
+.fj-nav-btn:hover {
+  background: rgba(255, 255, 255, 0.22);
+  border-color: rgba(255, 255, 255, 0.38);
+}
+
+.fj-nav-btn:focus-visible {
+  outline: 2px solid #9acb69;
+  outline-offset: 2px;
+}
+
+/* ── Stage dot indicators ─────────────────────────────────────────────────── */
+
+.fj-dots {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.fj-dot {
+  width: 6px;
+  height: 6px;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.22);
+  cursor: pointer;
+  transition: background 200ms ease, border-color 200ms ease,
+              width 200ms ease, border-radius 200ms ease;
+}
+
+.fj-dot.active {
+  width: 18px;
+  border-radius: 4px;
+  background: #9acb69;
+  border-color: #9acb69;
+}
+
+.fj-dot:focus-visible {
+  outline: 2px solid #9acb69;
+  outline-offset: 2px;
+}
+
+/* ── Progress bar ─────────────────────────────────────────────────────────── */
+
+.fj-progress {
+  height: 3px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 0 0 16px 16px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.fj-progress-fill {
+  height: 100%;
+  width: 0%;
+  background: #9acb69;
+  border-radius: 0 0 16px 16px;
+  animation: fj-progress-run 5.5s linear forwards;
+}
+
+@keyframes fj-progress-run {
+  from { width: 0%; }
+  to   { width: 100%; }
+}
+
+/* ── Seed appearance animation (Sowing stage) ─────────────────────────────── */
+
+.fj-seed-dot {
+  opacity: 0;
+  animation: fj-seed-drop 0.38s ease forwards;
+}
+.fj-sd-0 { animation-delay: 0.05s; }
+.fj-sd-1 { animation-delay: 0.18s; }
+.fj-sd-2 { animation-delay: 0.31s; }
+.fj-sd-3 { animation-delay: 0.44s; }
+.fj-sd-4 { animation-delay: 0.57s; }
+.fj-sd-5 { animation-delay: 0.70s; }
+
+@keyframes fj-seed-drop {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+/* ── Sprout animation (Germination stage) ─────────────────────────────────── */
+
+.fj-sprout {
+  animation: fj-sprout-grow 0.6s ease-out both;
+}
+.fj-sprout-0 { animation-delay: 0.05s; }
+.fj-sprout-1 { animation-delay: 0.15s; }
+.fj-sprout-2 { animation-delay: 0.25s; }
+.fj-sprout-3 { animation-delay: 0.35s; }
+.fj-sprout-4 { animation-delay: 0.45s; }
+
+@keyframes fj-sprout-grow {
+  from { transform: scaleY(0.2); opacity: 0; }
+  to   { transform: scaleY(1); opacity: 1; }
+}
+
+/* ── Drip drop animation (Irrigation stage) ───────────────────────────────── */
+
+.fj-drop {
+  animation: fj-drip 1.6s ease-in-out infinite;
+}
+.fj-drop-0 { animation-delay: 0s; }
+.fj-drop-1 { animation-delay: 0.4s; }
+.fj-drop-2 { animation-delay: 0.8s; }
+.fj-drop-3 { animation-delay: 1.2s; }
+
+@keyframes fj-drip {
+  0%   { transform: translateY(0); opacity: 0; }
+  15%  { opacity: 1; }
+  80%  { transform: translateY(20px); opacity: 0.6; }
+  100% { transform: translateY(0); opacity: 0; }
+}
+
+/* ── Crop grow-in animation (Growth stage) ────────────────────────────────── */
+
+.fj-crop {
+  animation: fj-grow-in 0.55s ease-out both;
+}
+.fj-crop-0 { animation-delay: 0s; }
+.fj-crop-1 { animation-delay: 0.10s; }
+.fj-crop-2 { animation-delay: 0.20s; }
+.fj-crop-3 { animation-delay: 0.30s; }
+.fj-crop-4 { animation-delay: 0.40s; }
+
+@keyframes fj-grow-in {
+  from { transform: scaleY(0.15); opacity: 0; }
+  to   { transform: scaleY(1); opacity: 1; }
+}
+
+/* ── Mature crops sway & pulse ─────────────────────────────────────────────── */
+
+.fj-mature {
+  animation: fj-sway 3s ease-in-out infinite alternate;
+}
+.fj-mature-0 { animation-delay: 0s; }
+.fj-mature-1 { animation-delay: 0.3s; }
+.fj-mature-2 { animation-delay: 0.6s; }
+.fj-mature-3 { animation-delay: 0.2s; }
+.fj-mature-4 { animation-delay: 0.5s; }
+.fj-mature-5 { animation-delay: 0.8s; }
+
+/* ── Wheat sway animation (Harvest stage) ─────────────────────────────────── */
+
+.fj-wheat {
+  animation: fj-sway 2.8s ease-in-out infinite alternate;
+}
+.fj-wheat-0 { animation-delay: 0s; }
+.fj-wheat-1 { animation-delay: 0.35s; }
+.fj-wheat-2 { animation-delay: 0.70s; }
+.fj-wheat-3 { animation-delay: 0.20s; }
+.fj-wheat-4 { animation-delay: 0.55s; }
+.fj-wheat-5 { animation-delay: 0.90s; }
+.fj-wheat-6 { animation-delay: 0.10s; }
+.fj-wheat-7 { animation-delay: 0.45s; }
+
+@keyframes fj-sway {
+  from { transform: rotate(-2.5deg); }
+  to   { transform: rotate(2.5deg); }
+}
+
+/* ── Reduced motion overrides ─────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .fj-content { animation: none; }
+  .fj-seed-dot { opacity: 1; animation: none; transform: none; }
+  .fj-sprout { opacity: 1; animation: none; transform: none; }
+  .fj-drop { animation: none; opacity: 1; transform: none; }
+  .fj-crop { animation: none; opacity: 1; transform: none; }
+  .fj-mature { animation: none; transform: none; }
+  .fj-wheat { animation: none; transform: none; }
+  .fj-progress-fill { animation: none; }
+  .fj-dot { transition: none; }
+  .fj-nav-btn { transition: none; }
+}
+
+/* ── Tablet: compact panel above the form ─────────────────────────────────── */
+
+@media (max-width: 860px) {
+  .fj-panel {
+    border-radius: 14px;
+  }
+
+  .fj-scene-svg {
+    max-height: 160px;
+    width: 100%;
+  }
+
+  .fj-content {
+    padding: 12px 16px 6px;
+  }
+
+  .fj-title {
+    font-size: 15px;
+  }
+
+  .fj-points li {
+    font-size: 10.5px;
+  }
+
+  .fj-nav-bar {
+    padding: 8px 12px 12px;
+  }
+}
+
+/* ── Mobile: minimal compact banner ──────────────────────────────────────── */
+
+@media (max-width: 540px) {
+  .fj-scene-svg {
+    max-height: 120px;
+  }
+
+  .fj-content {
+    padding: 10px 14px 4px;
+  }
+
+  .fj-title {
+    font-size: 13px;
+  }
+
+  /* Show only first bullet point on small screens for comfortable readability */
+  .fj-points li:not(:first-child) {
+    display: none;
+  }
+
+  .fj-points {
+    gap: 0;
+  }
+
+  .fj-nav-bar {
+    padding: 7px 10px 10px;
+  }
+
+  .fj-dot { width: 5px; height: 5px; }
+  .fj-dot.active { width: 14px; }
+
+  .fj-nav-btn {
+    width: 28px;
+    height: 28px;
+  }
+}

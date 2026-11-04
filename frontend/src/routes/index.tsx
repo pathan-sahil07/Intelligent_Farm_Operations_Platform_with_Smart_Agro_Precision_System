@@ -4,12 +4,16 @@ import { APP_ROUTES } from '../constants/routes.constants'
 import DashboardLayout from '../layout/DashboardLayout/DashboardLayout'
 import NotFound from '../pages/NotFound'
 import type { AppRoute } from './routes.config'
+import ProtectedRoute from './ProtectedRoute'
+import PublicRoute from './PublicRoute'
 
 interface ErrorBoundaryState {
   hasError: boolean
 }
 
 const Dashboard = lazy(() => import('../pages/Dashboard'))
+const LoginPage = lazy(() => import('../pages/Login'))
+const SignUpPage = lazy(() => import('../pages/SignUp'))
 const FarmManagementPage = lazy(() =>
   import('../features/farm-management/components/FarmManagementPage').then((module) => ({
     default: module.FarmManagementPage,
@@ -103,7 +107,29 @@ export function AppRoutes() {
     <RouteErrorBoundary>
       <Suspense fallback={<div aria-busy="true" aria-live="polite" className="route-loading">Loading page…</div>}>
         <Routes>
-          <Route element={<DashboardLayout />}>
+          <Route
+            path={APP_ROUTES.login}
+            element={
+              <PublicRoute>
+                <LoginPage />
+              </PublicRoute>
+            }
+          />
+          <Route
+            path={APP_ROUTES.signup}
+            element={
+              <PublicRoute>
+                <SignUpPage />
+              </PublicRoute>
+            }
+          />
+          <Route
+            element={
+              <ProtectedRoute>
+                <DashboardLayout />
+              </ProtectedRoute>
+            }
+          >
             {appRoutes.map((route) => (
               <Route key={route.path} path={route.path} element={route.element} />
             ))}

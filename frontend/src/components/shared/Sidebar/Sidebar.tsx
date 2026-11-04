@@ -27,7 +27,7 @@ const navItems = [
   { label: 'Inventory', path: APP_ROUTES.inventory, icon: Package },
   { label: 'Equipment', path: APP_ROUTES.equipment, icon: Tractor },
   { label: 'Weather', path: APP_ROUTES.weather, icon: CloudSun },
-  { label: 'GIS farm mapping', path: APP_ROUTES.gis, icon: MapPinned },
+  { label: 'GIS Farm Mapping', path: APP_ROUTES.gis, icon: MapPinned },
   { label: 'Analytics', path: APP_ROUTES.analytics, icon: BarChart3 },
 ]
 

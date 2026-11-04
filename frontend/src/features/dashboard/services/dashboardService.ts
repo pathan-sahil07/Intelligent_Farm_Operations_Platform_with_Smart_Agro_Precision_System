@@ -1,22 +1,33 @@
-import type { DashboardSummary } from '../types/dashboard.types'
-import { farmFields, farmProfiles } from '../../farm-management/data/sampleData'
+import type { DashboardStat, DashboardSummary } from '../types/dashboard.types'
+import {
+  getFarmAcreageSummary,
+  getFarmManagementSnapshot,
+} from '../../farm-management/services/farmManagementService'
+import type { FarmManagementSnapshot } from '../../farm-management/types/farm-management.types'
 
-const managedAreaAcres = farmProfiles.reduce((total, farm) => total + farm.totalArea, 0)
-const mappedAreaAcres = farmFields.reduce((total, field) => total + field.area, 0)
-const unmappedAreaAcres = managedAreaAcres - mappedAreaAcres
+const demoStats: DashboardStat[] = [
+  { id: 'crops', label: 'Active crop cycles', value: '12', note: 'Across 4 crop types' },
+  { id: 'water', label: 'Water scheduled', value: '18.4k gal', note: 'This week · sample' },
+  { id: 'tasks', label: 'Open field tasks', value: '07', note: '2 due today · sample' },
+]
 
-const demoSummary: DashboardSummary = {
-  stats: [
-    {
-      id: 'area',
-      label: 'Managed area',
-      value: `${managedAreaAcres} ac`,
-      note: `${farmFields.length} field records · ${mappedAreaAcres} mapped, ${unmappedAreaAcres} unmapped`,
-    },
-    { id: 'crops', label: 'Active crop cycles', value: '12', note: 'Across 4 crop types' },
-    { id: 'water', label: 'Water scheduled', value: '18.4k gal', note: 'This week · sample' },
-    { id: 'tasks', label: 'Open field tasks', value: '07', note: '2 due today · sample' },
-  ],
+function formatDueDate(daysFromToday: number, currentDate: Date): string {
+  const dueDate = new Date(
+    currentDate.getFullYear(),
+    currentDate.getMonth(),
+    currentDate.getDate() + daysFromToday,
+  )
+
+  if (daysFromToday === 0) return 'Today'
+  if (daysFromToday === 1) return 'Tomorrow'
+
+  return new Intl.DateTimeFormat('en', {
+    month: 'short',
+    day: 'numeric',
+  }).format(dueDate)
+}
+
+const demoSummary: Pick<DashboardSummary, 'activities'> = {
   activities: [
     {
       id: 'fertilizer',
@@ -37,31 +48,46 @@ const demoSummary: DashboardSummary = {
       time: 'Yesterday',
     },
   ],
-  tasks: [
-    {
-      id: 'field-07',
-      title: 'Scout for leaf spot',
-      field: 'East Field',
-      dueDate: 'Today',
-      status: 'Needs attention',
-    },
-    {
-      id: 'field-02',
-      title: 'Apply compost',
-      field: 'South Plot',
-      dueDate: 'Tomorrow',
-      status: 'Planned',
-    },
-    {
-      id: 'field-04',
-      title: 'Check irrigation lines',
-      field: 'River Field',
-      dueDate: 'Oct 27',
-      status: 'In progress',
-    },
-  ],
 }
 
-export function getDashboardSummary(): DashboardSummary {
-  return demoSummary
+export function getDashboardSummary(
+  snapshot: FarmManagementSnapshot = getFarmManagementSnapshot(),
+  currentDate = new Date(),
+): DashboardSummary {
+  const acreage = getFarmAcreageSummary(undefined, snapshot)
+  return {
+    ...demoSummary,
+    tasks: [
+      {
+        id: 'field-07',
+        title: 'Scout for leaf spot',
+        field: 'East Field',
+        dueDate: formatDueDate(0, currentDate),
+        status: 'Needs attention',
+      },
+      {
+        id: 'field-02',
+        title: 'Apply compost',
+        field: 'South Plot',
+        dueDate: formatDueDate(1, currentDate),
+        status: 'Planned',
+      },
+      {
+        id: 'field-04',
+        title: 'Check irrigation lines',
+        field: 'River Field',
+        dueDate: formatDueDate(3, currentDate),
+        status: 'In progress',
+      },
+    ],
+    stats: [
+      {
+        id: 'area',
+        label: 'Managed area',
+        value: `${acreage.totalArea} ac`,
+        note: `${acreage.totalFields} field records · ${acreage.mappedFields} mapped fields, ${acreage.unmappedFields} without boundaries`,
+      },
+      ...demoStats,
+    ],
+  }
 }

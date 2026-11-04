@@ -1,0 +1,11 @@
+spring:
+  datasource:
+    url: 'postgresql://neondb_owner:npg_1beK8hqsjlON@ep-hidden-rain-b49v01d6-pooler.c-6.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require'
+    username: neondb_owner
+    password: npg_1beK8hqsjlON
+    driver-class-name: org.postgresql.Driver
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    validate-on-migrate: true
+    clean-disabled: true

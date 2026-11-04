@@ -1,19 +1,15 @@
 import type { Feature, FeatureCollection, Polygon } from 'geojson'
+import type { FarmProfile } from '../../farm-management/types/farm-management.types'
 
-export interface FarmCoordinates {
-  latitude: number
-  longitude: number
-}
-
-export interface FarmMapRecord {
-  id: string
-  name: string
-  location: string
-  coordinates: FarmCoordinates
-  areaAcres: number
-}
+export type { FarmCoordinates } from '../../farm-management/types/farm-management.types'
+export type FarmMapRecord = FarmProfile
 
 export type IrrigationStatus = 'Scheduled' | 'Needs irrigation' | 'Up to date'
+
+export interface FieldBoundaryProperties {
+  fieldId: string
+  irrigationStatus: IrrigationStatus
+}
 
 export interface FieldProperties {
   farmId: string
@@ -25,6 +21,10 @@ export interface FieldProperties {
 }
 
 export type FieldBoundary = Feature<Polygon, FieldProperties>
+
+export interface SampleFarmMapData {
+  fields: FeatureCollection<Polygon, FieldBoundaryProperties>
+}
 
 export interface FarmMapData {
   farms: FarmMapRecord[]

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useSyncExternalStore } from 'react'
 import { CircleMarker, GeoJSON, MapContainer, Popup, TileLayer } from 'react-leaflet'
 import type { Feature, Geometry } from 'geojson'
 import type { Layer, PathOptions } from 'leaflet'
@@ -6,34 +6,36 @@ import 'leaflet/dist/leaflet.css'
 import { Card } from '../../../components/ui/Card'
 import { getFarmMapData } from '../services/gisMappingService'
 import type { FarmMapRecord, FieldBoundary, FieldProperties } from '../types/gis-mapping.types'
-
-const mapData = getFarmMapData()
-const initialFieldId = mapData.fields.features[0]?.properties.fieldId ?? null
-const totalFarmAreaAcres = mapData.farms.reduce((total, farm) => total + farm.areaAcres, 0)
-const mappedAreaAcres = mapData.fields.features.reduce(
-  (total, field) => total + field.properties.areaAcres,
-  0,
-)
-const unmappedAreaAcres = totalFarmAreaAcres - mappedAreaAcres
-
-function getFarmMappedArea(farmId: string) {
-  return mapData.fields.features
-    .filter((field) => field.properties.farmId === farmId)
-    .reduce((total, field) => total + field.properties.areaAcres, 0)
-}
+import {
+  getFarmAcreageSummary,
+  getFarmManagementSnapshot,
+  subscribeFarmManagement,
+} from '../../farm-management/services/farmManagementService'
 
 function GisMappingPage() {
-  const [selectedFarmId, setSelectedFarmId] = useState(mapData.farms[0]?.id ?? '')
-  const [selectedFieldId, setSelectedFieldId] = useState<string | null>(initialFieldId)
-  const selectedFarm = mapData.farms.find((farm) => farm.id === selectedFarmId)
-  const selectedField = mapData.fields.features.find(
-    (field) => field.properties.fieldId === selectedFieldId,
+  const snapshot = useSyncExternalStore(subscribeFarmManagement, getFarmManagementSnapshot)
+  const mapData = getFarmMapData(snapshot)
+  const [selectedFarmIdState, setSelectedFarmId] = useState(() => mapData.farms[0]?.id ?? '')
+  const [selectedFieldIdState, setSelectedFieldId] = useState<string | null>(
+    () => mapData.fields.features[0]?.properties.fieldId ?? null,
   )
+  const selectedFarmId = mapData.farms.some((farm) => farm.id === selectedFarmIdState)
+    ? selectedFarmIdState
+    : mapData.farms[0]?.id ?? ''
+  const selectedFarm = mapData.farms.find((farm) => farm.id === selectedFarmId)
   const farmFields = mapData.fields.features.filter(
     (field) => field.properties.farmId === selectedFarmId,
   )
-  const selectedFarmMappedAreaAcres = getFarmMappedArea(selectedFarmId)
-  const selectedFarmUnmappedAreaAcres = (selectedFarm?.areaAcres ?? 0) - selectedFarmMappedAreaAcres
+  const selectedFieldId = farmFields.some(
+    (field) => field.properties.fieldId === selectedFieldIdState,
+  )
+    ? selectedFieldIdState
+    : farmFields[0]?.properties.fieldId ?? null
+  const selectedField = mapData.fields.features.find(
+    (field) => field.properties.fieldId === selectedFieldId,
+  )
+  const acreage = getFarmAcreageSummary(undefined, snapshot)
+  const selectedFarmAcreage = getFarmAcreageSummary(selectedFarmId, snapshot)
 
   function selectFarm(farm: FarmMapRecord) {
     setSelectedFarmId(farm.id)
@@ -82,8 +84,8 @@ function GisMappingPage() {
         <span aria-hidden="true">i</span>
         <span>
           Farm coordinates, boundaries, acreage, and irrigation statuses are fictional sample data.
-          {` ${unmappedAreaAcres} acres have no mapped field boundary; no geometry has been added for them.`}
-          {' '}Do not use this map for navigation, land measurement, or farm operations.
+          {` ${acreage.unmappedFields} registered fields have no matching boundary.`}
+          {' '}Polygon acreage has not been calculated or verified. Do not use this map for navigation, land measurement, or farm operations.
         </span>
       </div>
 
@@ -93,7 +95,7 @@ function GisMappingPage() {
           <p>Pan and zoom the OpenStreetMap basemap; select a marker or polygon</p>
         </div>
         <span className="tag">
-          {mapData.farms.length} farms · {mapData.fields.features.length} fields · {mappedAreaAcres} mapped / {totalFarmAreaAcres} total · {unmappedAreaAcres} unmapped ac
+          {mapData.farms.length} farms · {acreage.totalFields} registered fields · {acreage.mappedFields} mapped · {acreage.unmappedFields} unmapped
         </span>
       </div>
 
@@ -130,11 +132,11 @@ function GisMappingPage() {
                   radius={farm.id === selectedFarmId ? 9 : 7}
                 >
                   <Popup>
-                    <strong>{farm.name}</strong>
+                    <strong>{farm.farmName}</strong>
                     <br />
                     {farm.location}
                     <br />
-                    {farm.areaAcres} sample acres
+                    {farm.totalArea} sample farm acres
                   </Popup>
                 </CircleMarker>
               ))}
@@ -160,9 +162,9 @@ function GisMappingPage() {
                     onClick={() => selectFarm(farm)}
                     type="button"
                   >
-                    <strong>{farm.name}</strong>
+                    <strong>{farm.farmName}</strong>
                     <span>
-                      {farm.location} · {farm.areaAcres} total ac · {getFarmMappedArea(farm.id)} mapped ac · {farm.areaAcres - getFarmMappedArea(farm.id)} unmapped ac
+                      {farm.location} · {farm.totalArea} sample total ac · {getFarmAcreageSummary(farm.id, snapshot).mappedFields} mapped fields · {getFarmAcreageSummary(farm.id, snapshot).unmappedFields} unmapped fields
                     </span>
                   </button>
                 </li>
@@ -171,9 +173,10 @@ function GisMappingPage() {
             {selectedFarm && (
               <dl className="gis-details">
                 <div><dt>Farm ID</dt><dd>{selectedFarm.id}</dd></div>
-                <div><dt>Farm area</dt><dd>{selectedFarm.areaAcres} sample acres</dd></div>
-                <div><dt>Mapped area</dt><dd>{selectedFarmMappedAreaAcres} sample acres</dd></div>
-                <div><dt>Unmapped area</dt><dd>{selectedFarmUnmappedAreaAcres} sample acres</dd></div>
+                <div><dt>Farm acreage</dt><dd>{selectedFarm.totalArea} sample acres</dd></div>
+                <div><dt>Registered fields</dt><dd>{selectedFarmAcreage.totalFields}</dd></div>
+                <div><dt>Mapped fields</dt><dd>{selectedFarmAcreage.mappedFields}</dd></div>
+                <div><dt>Unmapped fields</dt><dd>{selectedFarmAcreage.unmappedFields}</dd></div>
                 <div><dt>Latitude</dt><dd>{selectedFarm.coordinates.latitude.toFixed(5)}</dd></div>
                 <div><dt>Longitude</dt><dd>{selectedFarm.coordinates.longitude.toFixed(5)}</dd></div>
               </dl>
@@ -181,8 +184,8 @@ function GisMappingPage() {
           </Card>
 
           <Card className="gis-panel-card">
-            <h2 className="panel-title">Fields · {selectedFarm?.name ?? 'select a farm'}</h2>
-            <p className="panel-subtitle">Choose a field to highlight its boundary</p>
+            <h2 className="panel-title">Fields · {selectedFarm?.farmName ?? 'select a farm'}</h2>
+            <p className="panel-subtitle">Choose a mapped field to highlight its sample boundary</p>
             {farmFields.length === 0 ? (
               <p className="table-empty">No sample field boundaries are available for this farm.</p>
             ) : (
@@ -196,7 +199,7 @@ function GisMappingPage() {
                       type="button"
                     >
                       <strong>{field.properties.name} · {field.properties.fieldId}</strong>
-                      <span>{field.properties.crop} · {field.properties.areaAcres} sample ac</span>
+                      <span>{field.properties.crop} · {field.properties.areaAcres} registered ac</span>
                     </button>
                   </li>
                 ))}
@@ -206,10 +209,10 @@ function GisMappingPage() {
               <dl className="gis-details">
                 <div><dt>Field name</dt><dd>{selectedField.properties.name}</dd></div>
                 <div><dt>Field ID</dt><dd>{selectedField.properties.fieldId}</dd></div>
-                <div><dt>Area</dt><dd>{selectedField.properties.areaAcres} sample acres</dd></div>
+                <div><dt>Registered field area</dt><dd>{selectedField.properties.areaAcres} sample acres</dd></div>
                 <div><dt>Crop</dt><dd>{selectedField.properties.crop}</dd></div>
                 <div><dt>Irrigation status</dt><dd>{selectedField.properties.irrigationStatus}</dd></div>
-                <div><dt>Farm</dt><dd>{selectedFarm?.name ?? 'Unknown farm'}</dd></div>
+                <div><dt>Farm</dt><dd>{selectedFarm?.farmName ?? 'Unknown farm'}</dd></div>
               </dl>
             )}
           </Card>

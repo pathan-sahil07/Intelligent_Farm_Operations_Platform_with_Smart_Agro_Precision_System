@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { ChevronRight, Home } from 'lucide-react'
-import { Outlet, useLocation } from 'react-router-dom'
+import { Link, Outlet, useLocation } from 'react-router-dom'
 import { Header } from '../../components/shared/Header/Header'
 import { Sidebar } from '../../components/shared/Sidebar/Sidebar'
-import { APP_ROUTE_LABELS } from '../../constants/routes.constants'
+import { APP_ROUTES, APP_ROUTE_LABELS } from '../../constants/routes.constants'
 import '../../App.css'
 
 export default function DashboardLayout() {
@@ -21,7 +21,11 @@ export default function DashboardLayout() {
         <main className="page-content">
           <div aria-label="Breadcrumb" className="breadcrumb">
             <Home aria-hidden="true" size={12} />
-            <span>Workspace</span>
+            {location.pathname === APP_ROUTES.dashboard ? (
+              <span>Workspace</span>
+            ) : (
+              <Link to={APP_ROUTES.dashboard}>Workspace</Link>
+            )}
             <ChevronRight aria-hidden="true" size={11} />
             <strong aria-current="page">{title}</strong>
           </div>

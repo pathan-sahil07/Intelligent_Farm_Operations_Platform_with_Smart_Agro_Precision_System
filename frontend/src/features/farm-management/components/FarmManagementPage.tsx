@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react'
+import { useState, useSyncExternalStore, type FormEvent } from 'react'
 import { Plus, Users, Wallet, Wheat } from 'lucide-react'
 import { Button } from '../../../components/ui/Button'
 import { Card } from '../../../components/ui/Card'
@@ -6,38 +6,49 @@ import { Input } from '../../../components/ui/Input'
 import { Modal } from '../../../components/ui/Modal'
 import { Table } from '../../../components/ui/Table'
 import {
+  createField,
+  getFarmAcreageSummary,
+  getFarmManagementSnapshot,
+  subscribeFarmManagement,
+} from '../services/farmManagementService'
+import {
   farmExpenses,
-  farmFields as initialFields,
-  farmProfiles,
   farmTasks,
   farmWorkers,
 } from '../data/sampleData'
 import type { FarmExpense, FarmField, FarmTask, FarmWorker } from '../types/farm-management.types'
 
 const currency = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 })
-const totalFarmArea = farmProfiles.reduce((total, farm) => total + farm.totalArea, 0)
-const mappedArea = initialFields.reduce((total, field) => total + field.area, 0)
-const unmappedArea = totalFarmArea - mappedArea
 
 function FarmManagementPage() {
-  const [fields, setFields] = useState(initialFields)
+  const snapshot = useSyncExternalStore(subscribeFarmManagement, getFarmManagementSnapshot)
+  const acreage = getFarmAcreageSummary(undefined, snapshot)
   const [modalOpen, setModalOpen] = useState(false)
   const [formError, setFormError] = useState('')
 
   function addField(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     const formData = new FormData(event.currentTarget)
+    const farmId = String(formData.get('farmId') ?? '').trim()
     const name = String(formData.get('name') ?? '').trim()
     const crop = String(formData.get('crop') ?? '').trim()
     const area = Number(formData.get('area'))
-    if (!name || !crop || !Number.isFinite(area) || area <= 0) {
-      setFormError('Enter a field name, crop, and area greater than zero.')
+    if (!farmId || !name || !crop || !Number.isFinite(area) || area <= 0) {
+      setFormError('Choose a farm, enter a field name and crop, and provide an area greater than zero.')
       return
     }
-    setFields((current) => [
-      ...current,
-      { id: `field-${Date.now()}`, name, crop, area, status: 'Preparing' },
-    ])
+    const result = createField({
+      id: `field-${Date.now()}`,
+      farmId,
+      name,
+      crop,
+      area,
+      status: 'Preparing',
+    })
+    if (!result.success) {
+      setFormError(result.error)
+      return
+    }
     setFormError('')
     setModalOpen(false)
     event.currentTarget.reset()
@@ -57,7 +68,7 @@ function FarmManagementPage() {
     {
       key: 'farm',
       header: 'Farm',
-      render: (field: FarmField) => farmProfiles.find((farm) => farm.id === field.farmId)?.farmName ?? 'Unassigned',
+      render: (field: FarmField) => snapshot.farms.find((farm) => farm.id === field.farmId)?.farmName ?? 'Unknown farm',
     },
     { key: 'crop', header: 'Crop', render: (field: FarmField) => field.crop },
     { key: 'status', header: 'Status', render: (field: FarmField) => <span className="tag">{field.status}</span> },
@@ -102,13 +113,13 @@ function FarmManagementPage() {
       </div>
       <div className="notice">
         <Wheat aria-hidden="true" size={15} />
-        <span>Sample farm and staff records. New fields are held in local page state and will not persist after reload.</span>
+        <span>Sample farm and staff records. New fields are held in shared in-memory state and will not persist after reload.</span>
       </div>
 
       <div className="content-grid three" style={{ marginTop: 16 }}>
         <Card className="profile-card">
           <span className="stat-label">Farm profiles</span>
-          {farmProfiles.map((farm) => (
+          {snapshot.farms.map((farm) => (
             <div key={farm.id} style={{ marginTop: 12 }}>
               <p className="panel-title">{farm.farmName} · {farm.totalArea} ac</p>
               <p className="panel-subtitle">{farm.farmer ?? 'Manager not recorded'} · {farm.location}</p>
@@ -117,9 +128,10 @@ function FarmManagementPage() {
         </Card>
         <Card className="stat-card">
           <span className="stat-label">Managed area</span>
-          <p className="stat-value">{totalFarmArea} ac</p>
+          <p className="stat-value">{acreage.totalArea} ac</p>
           <span className="stat-note">Sample farm portfolio total</span>
-          <span className="stat-note">{mappedArea} mapped · {unmappedArea} unmapped</span>
+          <span className="stat-note">{acreage.registeredArea} ac registered · {acreage.unregisteredArea} ac not assigned to fields</span>
+          <span className="stat-note">{acreage.mappedFields} mapped fields · {acreage.unmappedFields} without boundaries</span>
         </Card>
         <Card className="stat-card">
           <span className="stat-label"><span>People & costs</span><Users aria-hidden="true" size={16} /></span>
@@ -132,7 +144,7 @@ function FarmManagementPage() {
         <div><h2>Registered fields</h2><p>Field areas and current work status</p></div>
       </div>
       <Card padding={false}>
-        <Table caption="Registered farm fields" columns={fieldColumns} getRowKey={(field) => field.id} rows={fields} />
+        <Table caption="Registered farm fields" columns={fieldColumns} getRowKey={(field) => field.id} rows={snapshot.fields} />
       </Card>
 
       <div className="content-grid two">
@@ -157,6 +169,15 @@ function FarmManagementPage() {
       <Modal description="Add a field to the current demo view." onClose={() => setModalOpen(false)} open={modalOpen} title="Register a field">
         <form onSubmit={addField}>
           <div className="form-grid">
+            <label className="field">
+              <span className="field-label">Farm</span>
+              <select className="field-control" defaultValue="" name="farmId" required>
+                <option disabled value="">Choose a farm</option>
+                {snapshot.farms.map((farm) => (
+                  <option key={farm.id} value={farm.id}>{farm.farmName}</option>
+                ))}
+              </select>
+            </label>
             <Input autoFocus label="Field name" name="name" placeholder="e.g. West Meadow" required />
             <Input label="Crop" name="crop" placeholder="e.g. Barley" required />
             <Input label="Area (acres)" min="0.1" name="area" required step="0.1" type="number" />

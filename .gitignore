@@ -5,6 +5,8 @@ node_modules/
 # Build output
 dist/
 **/dist/
+target/
+**/target/
 
 # Environment variables and secrets
 .env

@@ -7,12 +7,14 @@ export const farmProfiles: FarmProfile[] = [
     farmName: 'Meadowbrook Farm',
     location: 'Central Valley, California',
     totalArea: 84,
+    coordinates: { latitude: 36.7384, longitude: -119.7902 },
   },
   {
     id: 'farm-demo-02',
     farmName: 'Creekside Farm',
     location: 'Central Valley, California',
     totalArea: 42,
+    coordinates: { latitude: 36.7352, longitude: -119.7828 },
   },
 ]
 

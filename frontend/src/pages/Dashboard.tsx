@@ -1,12 +1,16 @@
+import { useSyncExternalStore } from 'react'
 import { ArrowUpRight, CalendarDays, CircleAlert, Leaf, Plus } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { Card } from '../components/ui/Card'
 import { Table } from '../components/ui/Table'
 import { APP_ROUTES } from '../constants/routes.constants'
 import { getDashboardSummary } from '../features/dashboard/services/dashboardService'
+import { useCurrentDate } from '../hooks/useCurrentDate'
+import {
+  getFarmManagementSnapshot,
+  subscribeFarmManagement,
+} from '../features/farm-management/services/farmManagementService'
 import type { DashboardTask } from '../features/dashboard/types/dashboard.types'
-
-const summary = getDashboardSummary()
 
 const taskColumns = [
   {
@@ -32,18 +36,33 @@ const taskColumns = [
 ]
 
 function Dashboard() {
+  const currentDate = useCurrentDate()
+  const farmSnapshot = useSyncExternalStore(
+    subscribeFarmManagement,
+    getFarmManagementSnapshot,
+  )
+  const summary = getDashboardSummary(farmSnapshot, currentDate)
   const today = new Intl.DateTimeFormat('en', {
     weekday: 'long',
     month: 'long',
     day: 'numeric',
-  }).format(new Date())
+  }).format(currentDate)
+  const hour = currentDate.getHours()
+  const greeting =
+    hour >= 5 && hour < 12
+      ? 'Good morning'
+      : hour >= 12 && hour < 17
+        ? 'Good afternoon'
+        : hour >= 17 && hour < 21
+          ? 'Good evening'
+          : 'Good night'
 
   return (
     <>
       <div className="page-heading-row">
         <div>
           <p className="eyebrow">{today}</p>
-          <h1 className="page-title">Good morning, farm team</h1>
+          <h1 className="page-title">{greeting}, farm team</h1>
           <p className="page-description">
             Here is a snapshot of your operation. All figures below are illustrative demo data.
           </p>

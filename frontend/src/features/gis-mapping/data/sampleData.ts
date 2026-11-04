@@ -1,33 +1,13 @@
-import type { FarmMapData } from '../types/gis-mapping.types'
+import type { SampleFarmMapData } from '../types/gis-mapping.types'
 
-export const sampleFarmMapData: FarmMapData = {
-  farms: [
-    {
-      id: 'farm-demo-01',
-      name: 'Meadowbrook Farm',
-      location: 'Central Valley, California',
-      coordinates: { latitude: 36.7384, longitude: -119.7902 },
-      areaAcres: 84,
-    },
-    {
-      id: 'farm-demo-02',
-      name: 'Creekside Farm',
-      location: 'Central Valley, California',
-      coordinates: { latitude: 36.7352, longitude: -119.7828 },
-      areaAcres: 42,
-    },
-  ],
+export const sampleFarmMapData: SampleFarmMapData = {
   fields: {
     type: 'FeatureCollection',
     features: [
       {
         type: 'Feature',
         properties: {
-          farmId: 'farm-demo-01',
           fieldId: 'MB-N01',
-          name: 'North Orchard',
-          areaAcres: 32,
-          crop: 'Apple',
           irrigationStatus: 'Scheduled',
         },
         geometry: {
@@ -44,11 +24,7 @@ export const sampleFarmMapData: FarmMapData = {
       {
         type: 'Feature',
         properties: {
-          farmId: 'farm-demo-01',
           fieldId: 'MB-R04',
-          name: 'River Field',
-          areaAcres: 28,
-          crop: 'Sweet corn',
           irrigationStatus: 'Up to date',
         },
         geometry: {
@@ -65,11 +41,7 @@ export const sampleFarmMapData: FarmMapData = {
       {
         type: 'Feature',
         properties: {
-          farmId: 'farm-demo-01',
           fieldId: 'MB-E07',
-          name: 'East Field',
-          areaAcres: 24,
-          crop: 'Tomato',
           irrigationStatus: 'Needs irrigation',
         },
         geometry: {
@@ -86,11 +58,7 @@ export const sampleFarmMapData: FarmMapData = {
       {
         type: 'Feature',
         properties: {
-          farmId: 'farm-demo-02',
           fieldId: 'CS-S02',
-          name: 'South Plot',
-          areaAcres: 18,
-          crop: 'Cover crop',
           irrigationStatus: 'Scheduled',
         },
         geometry: {
