@@ -245,7 +245,11 @@ function App() {
               onClick={() => {
                 setTab(item.name)
                 setNotice('')
-                if (item.name === 'Farm Management') navigate('/farms')
+                if (item.name === 'Farm Management') {
+                  navigate('/farms')
+                } else if (location.pathname.startsWith('/farms')) {
+                  navigate('/')
+                }
               }}>
               <span className="nav-icon">{item.icon}</span>{item.name}
             </button>
