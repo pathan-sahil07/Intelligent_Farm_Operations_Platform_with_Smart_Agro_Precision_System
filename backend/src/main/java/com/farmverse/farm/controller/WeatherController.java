@@ -4,7 +4,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.Map;
 
@@ -24,10 +26,18 @@ public class WeatherController {
             throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,
                     "Weather provider is not configured");
         }
-        Map<?, ?> response = client.get()
-                .uri(providerUrl + "?latitude={latitude}&longitude={longitude}", latitude, longitude)
-                .retrieve()
-                .body(Map.class);
-        return response == null ? Map.of() : response;
+        try {
+            String uri = UriComponentsBuilder.fromUriString(providerUrl)
+                    .queryParam("latitude", latitude)
+                    .queryParam("longitude", longitude)
+                    .queryParam("current_weather", true)
+                    .build()
+                    .toUriString();
+            Map<?, ?> response = client.get().uri(uri).retrieve().body(Map.class);
+            return response == null ? Map.of() : response;
+        } catch (RestClientException exception) {
+            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY,
+                    "Weather provider is unavailable", exception);
+        }
     }
 }

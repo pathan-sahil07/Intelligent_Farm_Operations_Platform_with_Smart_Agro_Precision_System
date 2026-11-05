@@ -86,6 +86,25 @@ export interface Equipment {
   status: string;
 }
 
+export interface FarmResource {
+  id: number;
+  farmId: number | null;
+  name: string;
+  category: string;
+  unit: string;
+  plannedQuantity: number;
+  consumedQuantity: number;
+  cost: number;
+  season: string | null;
+}
+
+export interface WeatherData {
+  latitude?: number;
+  longitude?: number;
+  current_weather?: { temperature: number; windspeed: number; time: string };
+  [key: string]: unknown;
+}
+
 export const api = {
   getCrops: () => request<Crop[]>('/crops'),
 
@@ -145,4 +164,12 @@ export const api = {
   getAnalytics: () => request<AnalyticsOverview>('/analytics/overview'),
   getInventory: () => request<InventoryItem[]>('/inventory'),
   getEquipment: () => request<Equipment[]>('/equipment'),
+  createInventory: (data: Omit<InventoryItem, 'id' | 'createdAt'>) => request<InventoryItem>('/inventory', { method: 'POST', body: JSON.stringify(data) }),
+  consumeInventory: (id: number, quantity: number) => request<unknown>(`/inventory/${id}/transactions`, { method: 'POST', body: JSON.stringify({ transactionType: 'CONSUMPTION', quantity }) }),
+  createEquipment: (data: Omit<Equipment, 'id'>) => request<Equipment>('/equipment', { method: 'POST', body: JSON.stringify(data) }),
+  getResources: () => request<FarmResource[]>('/resources'),
+  createResource: (data: Omit<FarmResource, 'id'>) => request<FarmResource>('/resources', { method: 'POST', body: JSON.stringify(data) }),
+  consumeResource: (id: number, quantity: number) => request<FarmResource>(`/resources/${id}/consume?quantity=${quantity}`, { method: 'PATCH' }),
+  getWeather: (latitude: number, longitude: number) => request<WeatherData>(`/weather?latitude=${latitude}&longitude=${longitude}`),
+  getGisFarms: () => request<{ features: Array<{ geometry: { coordinates: [number, number] }; properties: { id: number; name: string } }> }>('/gis/farms'),
 };

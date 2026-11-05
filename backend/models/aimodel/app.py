@@ -1,4 +1,5 @@
 import os
+import re
 from pathlib import Path
 
 import numpy as np
@@ -14,13 +15,7 @@ BASE_DIR = Path(__file__).resolve().parent
 load_dotenv(BASE_DIR / ".env")
 
 API_KEY = os.getenv("GEMINI_API_KEY")
-
-if not API_KEY:
-    raise RuntimeError(
-        "GEMINI_API_KEY is missing from your .env file."
-    )
-
-client = genai.Client(api_key=API_KEY, http_options={"timeout": 10000})
+client = genai.Client(api_key=API_KEY, http_options={"timeout": 10000}) if API_KEY else None
 
 app = FastAPI(title="Agricultural RAG Chatbot")
 
@@ -30,9 +25,11 @@ app.add_middleware(
         "http://localhost:5173",
         "http://localhost:5174",
         "http://localhost:5175",
+        "http://localhost:5180",
         "http://127.0.0.1:5173",
         "http://127.0.0.1:5174",
         "http://127.0.0.1:5175",
+        "http://127.0.0.1:5180",
     ],
     allow_credentials=False,
     allow_methods=["GET", "POST", "OPTIONS"],
@@ -70,6 +67,8 @@ documents = load_documents()
 
 
 def create_embeddings(texts):
+    if client is None:
+        return None
     embeddings = []
     print(f"DEBUG: Embedding {len(texts)} text(s)", flush=True)
 
@@ -90,6 +89,16 @@ def create_embeddings(texts):
 document_embeddings = create_embeddings(documents)
 
 
+def retrieve(question: str):
+    tokens = set(re.findall(r"[a-z0-9]{3,}", question.lower()))
+    scores = []
+    for document in documents:
+        words = set(re.findall(r"[a-z0-9]{3,}", document.lower()))
+        scores.append(len(tokens & words) / max(len(tokens), 1))
+    top_indices = np.argsort(scores)[::-1][:3]
+    return [documents[i] for i in top_indices]
+
+
 class ChatRequest(BaseModel):
     question: str
 
@@ -102,8 +111,9 @@ class ChatResponse(BaseModel):
 @app.get("/")
 def home():
     return {
-        "message": "Gemini Agricultural RAG Chatbot is running!",
+        "message": "Agricultural RAG Chatbot is running!",
         "documents_loaded": len(documents),
+        "provider": "gemini" if client else "local-rag",
     }
 
 
@@ -123,43 +133,47 @@ def chat(request: ChatRequest):
         )
 
     try:
-        # Convert the question into an embedding.
-        query_embedding = create_embeddings([question])[0]
+        if client and document_embeddings is not None:
+            query_embedding = create_embeddings([question])[0]
+            denominator = (
+                np.linalg.norm(document_embeddings, axis=1)
+                * np.linalg.norm(query_embedding)
+            )
+            similarities = (
+                np.dot(document_embeddings, query_embedding)
+                / np.maximum(denominator, 1e-10)
+            )
+            top_indices = np.argsort(similarities)[::-1][:3]
+            sources = [documents[i] for i in top_indices]
+        else:
+            sources = retrieve(question)
 
-        # Find the most relevant document chunks.
-        denominator = (
-            np.linalg.norm(document_embeddings, axis=1)
-            * np.linalg.norm(query_embedding)
-        )
+        context = "\n\n".join(sources)
 
-        similarities = (
-            np.dot(document_embeddings, query_embedding)
-            / np.maximum(denominator, 1e-10)
-        )
-
-        top_indices = np.argsort(similarities)[::-1][:3]
-
-        context = "\n\n".join(
-            documents[i] for i in top_indices
-        )
-
-        print("DEBUG: Starting answer generation", flush=True)
-        # Generate an answer using Gemini.
-        response = client.models.generate_content(
-            model=CHAT_MODEL,
-            contents=(
-                "You are an agricultural assistant. Answer using the "
-                "provided agricultural context. If the context does not "
-                "contain enough information, say so. Do not invent facts. "
-                "Use simple language.\n\n"
-                f"Agricultural context:\n{context}\n\n"
-                f"Farmer's question: {question}"
-            ),
-        )
+        if client:
+            response = client.models.generate_content(
+                model=CHAT_MODEL,
+                contents=(
+                    "You are an agricultural assistant. Answer using the "
+                    "provided agricultural context. If the context does not "
+                    "contain enough information, say so. Do not invent facts. "
+                    "Use simple language.\n\n"
+                    f"Agricultural context:\n{context}\n\n"
+                    f"Farmer's question: {question}"
+                ),
+            )
+            answer = response.text or "I couldn't generate an answer."
+        else:
+            answer = (
+                "Based on the retrieved agricultural knowledge: "
+                f"{sources[0] if sources else 'No matching guidance was found.'} "
+                "For crop-specific treatment decisions, confirm the recommendation "
+                "with a qualified local agronomist."
+            )
 
         return ChatResponse(
-            answer=response.text or "I couldn't generate an answer.",
-            sources=[documents[i] for i in top_indices],
+            answer=answer,
+            sources=sources,
         )
 
     except Exception:
