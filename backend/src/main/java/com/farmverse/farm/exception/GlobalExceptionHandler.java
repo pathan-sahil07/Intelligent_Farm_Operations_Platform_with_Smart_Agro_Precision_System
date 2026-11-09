@@ -62,6 +62,28 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.CONFLICT, "The request conflicts with existing data (duplicate or still in use)");
     }
 
+    @ExceptionHandler(ConflictException.class)
+    public ResponseEntity<Map<String, Object>> businessConflict(ConflictException ex) {
+        return build(HttpStatus.CONFLICT, ex.getMessage());
+    }
+
+    @ExceptionHandler(org.springframework.security.access.AccessDeniedException.class)
+    public ResponseEntity<Map<String, Object>> forbidden(org.springframework.security.access.AccessDeniedException ex) {
+        String message = ex.getMessage() == null || ex.getMessage().equals("Access Denied")
+                ? "You do not have permission to perform this action" : ex.getMessage();
+        return build(HttpStatus.FORBIDDEN, message);
+    }
+
+    @ExceptionHandler(org.springframework.security.core.AuthenticationException.class)
+    public ResponseEntity<Map<String, Object>> unauthorized(org.springframework.security.core.AuthenticationException ex) {
+        return build(HttpStatus.UNAUTHORIZED, ex.getMessage());
+    }
+
+    @ExceptionHandler(org.springframework.web.server.ResponseStatusException.class)
+    public ResponseEntity<Map<String, Object>> responseStatus(org.springframework.web.server.ResponseStatusException ex) {
+        return build(HttpStatus.valueOf(ex.getStatusCode().value()), ex.getReason());
+    }
+
     @ExceptionHandler(IllegalStateException.class)
     public ResponseEntity<Map<String, Object>> illegalState(IllegalStateException ex) {
         return build(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());

@@ -1,35 +1,87 @@
 package com.farmverse.farm.controller;
 
-import com.farmverse.farm.repository.*;
+import com.farmverse.farm.service.AnalyticsService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
-import java.util.LinkedHashMap;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/analytics")
 @RequiredArgsConstructor
+@PreAuthorize("hasAuthority('ANALYTICS_READ')")
 public class AnalyticsController {
-    private final FarmRepository farms;
-    private final PlotRepository plots;
-    private final CropRepository crops;
-    private final HarvestRecordRepository harvests;
-    private final IrrigationScheduleRepository irrigation;
-    private final InventoryItemRepository inventory;
+    private final AnalyticsService service;
+
+    private static final String ISO = "yyyy-MM-dd";
 
     @GetMapping("/overview")
-    public Map<String, Object> overview() {
-        Map<String, Object> result = new LinkedHashMap<>();
-        result.put("totalFarms", farms.count());
-        result.put("totalPlots", plots.count());
-        result.put("activeCrops", crops.countByStatus("Active"));
-        result.put("harvestRecords", harvests.count());
-        result.put("irrigationSchedules", irrigation.count());
-        result.put("inventoryItems", inventory.count());
-        result.put("totalHarvestKg", harvests.totalQuantityKg().orElse(BigDecimal.ZERO));
-        result.put("completedIrrigation", irrigation.countByStatus("Completed"));
-        return result;
+    public Map<String, Object> overview(@RequestParam(required = false) Long farmId,
+                                        @RequestParam(required = false) @DateTimeFormat(pattern = ISO) LocalDate from,
+                                        @RequestParam(required = false) @DateTimeFormat(pattern = ISO) LocalDate to) {
+        return service.overview(farmId, from, to);
+    }
+
+    @GetMapping("/production")
+    public Map<String, Object> production(@RequestParam(required = false) Long farmId,
+                                          @RequestParam(required = false) @DateTimeFormat(pattern = ISO) LocalDate from,
+                                          @RequestParam(required = false) @DateTimeFormat(pattern = ISO) LocalDate to) {
+        return service.production(farmId, from, to);
+    }
+
+    @GetMapping("/irrigation")
+    public Map<String, Object> irrigation(@RequestParam(required = false) Long farmId,
+                                          @RequestParam(required = false) @DateTimeFormat(pattern = ISO) LocalDate from,
+                                          @RequestParam(required = false) @DateTimeFormat(pattern = ISO) LocalDate to) {
+        return service.irrigation(farmId, from, to);
+    }
+
+    @GetMapping("/inventory")
+    public Map<String, Object> inventory(@RequestParam(required = false) Long farmId,
+                                         @RequestParam(required = false) @DateTimeFormat(pattern = ISO) LocalDate from,
+                                         @RequestParam(required = false) @DateTimeFormat(pattern = ISO) LocalDate to) {
+        return service.inventory(farmId, from, to);
+    }
+
+    @GetMapping("/equipment")
+    public Map<String, Object> equipment(@RequestParam(required = false) Long farmId,
+                                         @RequestParam(required = false) @DateTimeFormat(pattern = ISO) LocalDate from,
+                                         @RequestParam(required = false) @DateTimeFormat(pattern = ISO) LocalDate to) {
+        return service.equipment(farmId, from, to);
+    }
+
+    @GetMapping("/resources")
+    public Map<String, Object> resources(@RequestParam(required = false) Long farmId,
+                                         @RequestParam(required = false) @DateTimeFormat(pattern = ISO) LocalDate from,
+                                         @RequestParam(required = false) @DateTimeFormat(pattern = ISO) LocalDate to) {
+        return service.resources(farmId, from, to);
+    }
+
+    @GetMapping("/costs")
+    public Map<String, Object> costs(@RequestParam(required = false) Long farmId,
+                                     @RequestParam(required = false) @DateTimeFormat(pattern = ISO) LocalDate from,
+                                     @RequestParam(required = false) @DateTimeFormat(pattern = ISO) LocalDate to) {
+        return service.costs(farmId, from, to);
+    }
+
+    @GetMapping("/export")
+    public ResponseEntity<byte[]> export(@RequestParam String report,
+                                         @RequestParam(required = false) Long farmId,
+                                         @RequestParam(required = false) @DateTimeFormat(pattern = ISO) LocalDate from,
+                                         @RequestParam(required = false) @DateTimeFormat(pattern = ISO) LocalDate to) {
+        String csv = service.exportCsv(report, farmId, from, to);
+        return ResponseEntity.ok()
+                .contentType(new MediaType("text", "csv", StandardCharsets.UTF_8))
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        ContentDisposition.attachment().filename(report + "-report.csv").build().toString())
+                .body(csv.getBytes(StandardCharsets.UTF_8));
     }
 }

@@ -3,13 +3,12 @@ package com.farmverse.farm.integration;
 import java.util.Optional;
 
 /**
- * The only place Module 2 talks to Module 1 (User & Access).
- * When Module 1 is ready, implement this interface against its user service
- * and delete {@link StubUserDirectory}.
+ * Bridge from farm code to the user module; implemented by DatabaseUserDirectory.
+ * Keep farm code decoupled from the user entities.
  */
 public interface UserDirectory {
 
-    /** True when the user exists and has the FIELD_WORKER role. */
+    /** True when the user is active and may be assigned to a farm as staff. */
     boolean isFieldWorker(Long userId);
 
     /** Display name of the user, if known. */

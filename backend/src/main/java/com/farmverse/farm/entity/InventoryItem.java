@@ -24,7 +24,13 @@ public class InventoryItem {
     @NotNull @PositiveOrZero private BigDecimal reorderLevel = BigDecimal.ZERO;
     @PositiveOrZero private BigDecimal unitCost;
     private LocalDate expiryDate;
+    private Long supplierId;
     private LocalDateTime createdAt;
+
+    @com.fasterxml.jackson.annotation.JsonProperty("lowStock")
+    public boolean isLowStock() {
+        return reorderLevel != null && quantity != null && reorderLevel.signum() > 0 && quantity.compareTo(reorderLevel) <= 0;
+    }
 
     @PrePersist
     void created() { createdAt = LocalDateTime.now(); }

@@ -23,6 +23,10 @@ public class Equipment {
     @NotBlank private String status = "AVAILABLE";
     private LocalDate purchaseDate;
     @PositiveOrZero private BigDecimal purchaseCost;
+    private BigDecimal operatingHours = BigDecimal.ZERO;
+    private Long allocatedToUserId;
+    private Long allocatedToTaskId;
+    private LocalDate nextMaintenanceDate;
     private LocalDateTime createdAt;
 
     @PrePersist

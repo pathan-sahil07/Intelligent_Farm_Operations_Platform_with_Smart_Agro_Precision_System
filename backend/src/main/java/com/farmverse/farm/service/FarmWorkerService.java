@@ -24,7 +24,7 @@ public class FarmWorkerService {
     public FarmWorker assign(Long farmId, Long userId) {
         Farm farm = farmService.get(farmId);
         if (!userDirectory.isFieldWorker(userId)) {
-            throw new BadRequestException("User " + userId + " is not a Field Worker");
+            throw new BadRequestException("User " + userId + " is not an active staff user that can be assigned to a farm");
         }
         if (workerRepo.existsByFarm_IdAndUserId(farmId, userId)) {
             throw new BadRequestException("Worker " + userId + " is already assigned to this farm");

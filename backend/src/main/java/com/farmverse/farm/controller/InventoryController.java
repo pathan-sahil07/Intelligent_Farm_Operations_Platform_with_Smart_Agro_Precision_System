@@ -2,66 +2,121 @@ package com.farmverse.farm.controller;
 
 import com.farmverse.farm.entity.InventoryItem;
 import com.farmverse.farm.entity.InventoryTransaction;
-import com.farmverse.farm.exception.BadRequestException;
-import com.farmverse.farm.exception.ResourceNotFoundException;
-import com.farmverse.farm.repository.InventoryItemRepository;
-import com.farmverse.farm.repository.InventoryTransactionRepository;
+import com.farmverse.farm.entity.Supplier;
+import com.farmverse.farm.service.InventoryService;
+import com.farmverse.farm.service.InventoryService.TransactionRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/inventory")
+@RequestMapping("/api")
 @RequiredArgsConstructor
 public class InventoryController {
-    private final InventoryItemRepository items;
-    private final InventoryTransactionRepository transactions;
+    private final InventoryService service;
 
-    @GetMapping
-    public List<InventoryItem> list(@RequestParam(required = false) Long farmId) {
-        return farmId == null ? items.findAll() : items.findByFarmIdOrderByNameAsc(farmId);
+    @GetMapping("/inventory")
+    @PreAuthorize("hasAuthority('INVENTORY_READ')")
+    public List<InventoryItem> list(@RequestParam(required = false) Long farmId,
+                                    @RequestParam(required = false) String category,
+                                    @RequestParam(defaultValue = "false") boolean lowStock) {
+        return service.list(farmId, category, lowStock);
     }
 
-    @PostMapping
+    @GetMapping("/inventory/low-stock")
+    @PreAuthorize("hasAuthority('INVENTORY_READ')")
+    public List<InventoryItem> lowStock(@RequestParam(required = false) Long farmId) {
+        return service.list(farmId, null, true);
+    }
+
+    @PostMapping("/inventory")
     @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("hasAuthority('INVENTORY_WRITE')")
     public InventoryItem create(@Valid @RequestBody InventoryItem item) {
-        item.setId(null);
-        return items.save(item);
+        return service.create(item);
     }
 
-    @PostMapping("/{id}/transactions")
+    @PutMapping("/inventory/{id}")
+    @PreAuthorize("hasAuthority('INVENTORY_WRITE')")
+    public InventoryItem update(@PathVariable Long id, @Valid @RequestBody InventoryItem item) {
+        return service.update(id, item);
+    }
+
+    @DeleteMapping("/inventory/{id}")
+    @PreAuthorize("hasAuthority('INVENTORY_WRITE')")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        service.delete(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/inventory/{id}/transactions")
     @ResponseStatus(HttpStatus.CREATED)
-    @Transactional
-    public InventoryTransaction transact(@PathVariable Long id, @Valid @RequestBody InventoryTransaction request) {
-        InventoryItem item = items.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Inventory item not found"));
-        BigDecimal quantity = request.getQuantity();
-        if ("CONSUMPTION".equals(request.getTransactionType())) {
-            if (item.getQuantity().compareTo(quantity) < 0) {
-                throw new BadRequestException("Insufficient inventory stock");
-            }
-            item.setQuantity(item.getQuantity().subtract(quantity));
-        } else if ("PURCHASE".equals(request.getTransactionType()) || "TRANSFER".equals(request.getTransactionType())) {
-            item.setQuantity(item.getQuantity().add(quantity));
-        } else {
-            throw new BadRequestException("transactionType must be PURCHASE, CONSUMPTION, or TRANSFER");
-        }
-        request.setId(null);
-        request.setInventoryItem(item);
-        items.save(item);
-        return transactions.save(request);
+    @PreAuthorize("hasAuthority('INVENTORY_WRITE')")
+    public InventoryTransaction transact(@PathVariable Long id, @Valid @RequestBody TransactionRequest request) {
+        return service.transact(id, request);
     }
 
-    @GetMapping("/{id}/transactions")
-    public List<InventoryTransaction> transactions(@PathVariable Long id) {
-        if (!items.existsById(id)) throw new ResourceNotFoundException("Inventory item not found");
-        return transactions.findAll().stream()
-                .filter(transaction -> transaction.getInventoryItem().getId().equals(id))
-                .toList();
+    @GetMapping("/inventory/{id}/transactions")
+    @PreAuthorize("hasAuthority('INVENTORY_READ')")
+    public List<InventoryTransaction> itemTransactions(@PathVariable Long id) {
+        return service.itemHistory(id);
+    }
+
+    @GetMapping("/inventory/transactions")
+    @PreAuthorize("hasAuthority('INVENTORY_READ')")
+    public Page<InventoryTransaction> history(@RequestParam(required = false) Long farmId,
+                                              @RequestParam(required = false) String type,
+                                              @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+                                              @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+                                              @RequestParam(defaultValue = "0") int page,
+                                              @RequestParam(defaultValue = "20") int size) {
+        return service.history(farmId, type, from, to,
+                PageRequest.of(Math.max(page, 0), Math.min(Math.max(size, 1), 100), Sort.by(Sort.Direction.DESC, "createdAt")));
+    }
+
+    @GetMapping("/inventory/purchases")
+    @PreAuthorize("hasAuthority('INVENTORY_READ')")
+    public Page<InventoryTransaction> purchases(@RequestParam(required = false) Long farmId,
+                                                @RequestParam(defaultValue = "0") int page,
+                                                @RequestParam(defaultValue = "20") int size) {
+        return service.history(farmId, "PURCHASE", null, null,
+                PageRequest.of(Math.max(page, 0), Math.min(Math.max(size, 1), 100), Sort.by(Sort.Direction.DESC, "createdAt")));
+    }
+
+    // ---- suppliers ----
+    @GetMapping("/suppliers")
+    @PreAuthorize("hasAuthority('INVENTORY_READ')")
+    public List<Supplier> suppliers(@RequestParam(required = false) Long farmId) {
+        return service.listSuppliers(farmId);
+    }
+
+    @PostMapping("/suppliers")
+    @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("hasAuthority('INVENTORY_WRITE')")
+    public Supplier createSupplier(@Valid @RequestBody Supplier supplier) {
+        return service.createSupplier(supplier);
+    }
+
+    @PutMapping("/suppliers/{id}")
+    @PreAuthorize("hasAuthority('INVENTORY_WRITE')")
+    public Supplier updateSupplier(@PathVariable Long id, @Valid @RequestBody Supplier supplier) {
+        return service.updateSupplier(id, supplier);
+    }
+
+    @DeleteMapping("/suppliers/{id}")
+    @PreAuthorize("hasAuthority('INVENTORY_WRITE')")
+    public ResponseEntity<Void> deleteSupplier(@PathVariable Long id) {
+        service.deleteSupplier(id);
+        return ResponseEntity.noContent().build();
     }
 }
