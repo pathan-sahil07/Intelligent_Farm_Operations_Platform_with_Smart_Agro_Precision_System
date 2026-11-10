@@ -44,6 +44,7 @@ services:
       context: ./backend/models/aimodel
     environment:
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GEMINI_CHAT_MODEL: ${GEMINI_CHAT_MODEL:-gemini-3.1-flash-lite}
     ports:
       - "127.0.0.1:8000:8000"
 

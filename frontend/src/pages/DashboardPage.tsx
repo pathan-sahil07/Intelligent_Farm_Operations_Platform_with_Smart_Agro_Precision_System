@@ -40,7 +40,7 @@ export default function DashboardPage() {
         <ErrorState error={dashboard.error} onRetry={() => dashboard.refetch()} />
       ) : d ? (
         <>
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
             <StatCard label="Plots" value={d.plotCount} hint={`${formatNumber(d.plottedAcres)} of ${formatNumber(d.farm.totalAreaAcres)} acres mapped`} />
             <StatCard label="Active crops" value={d.activeCrops} />
             <StatCard label="Irrigation pending" value={d.pendingIrrigation} />
