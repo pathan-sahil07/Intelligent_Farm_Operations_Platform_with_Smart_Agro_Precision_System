@@ -1248,7 +1248,7 @@
   position: relative;
   z-index: 1;
   width: 100%;
-  max-width: 1120px;
+  max-width: 1220px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
@@ -1299,7 +1299,7 @@
 
 .auth-split {
   display: grid;
-  grid-template-columns: minmax(320px, 1.25fr) minmax(340px, 460px);
+  grid-template-columns: minmax(320px, 1fr) minmax(340px, 560px);
   gap: 32px;
   align-items: center;
 }
@@ -1311,7 +1311,7 @@
 
 .auth-form-col {
   width: 100%;
-  max-width: 460px;
+  max-width: 560px;
   margin: 0 auto;
 }
 

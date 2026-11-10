@@ -6,6 +6,8 @@ import NotFound from '../pages/NotFound'
 import type { AppRoute } from './routes.config'
 import ProtectedRoute from './ProtectedRoute'
 import PublicRoute from './PublicRoute'
+import { RoleRoute } from './RoleRoute'
+import type { FarmRole } from '../features/user-management/services/hierarchyService'
 
 interface ErrorBoundaryState {
   hasError: boolean
@@ -14,6 +16,12 @@ interface ErrorBoundaryState {
 const Dashboard = lazy(() => import('../pages/Dashboard'))
 const LoginPage = lazy(() => import('../pages/Login'))
 const SignUpPage = lazy(() => import('../pages/SignUp'))
+const EmailVerificationPage = lazy(() => import('../pages/EmailVerification'))
+const InitialOwnerSetupPage = lazy(() => import('../pages/InitialOwnerSetup'))
+const OrganizationSetupPage = lazy(() => import('../pages/OrganizationSetup'))
+const UserManagementPage = lazy(() => import('../pages/UserManagement'))
+const InvitationAcceptancePage = lazy(() => import('../pages/InvitationAcceptance'))
+const TasksPage = lazy(() => import('../pages/Tasks'))
 const FarmManagementPage = lazy(() =>
   import('../features/farm-management/components/FarmManagementPage').then((module) => ({
     default: module.FarmManagementPage,
@@ -60,17 +68,21 @@ const AgriculturalAnalyticsPage = lazy(() =>
   })),
 )
 
+const ownerManager: FarmRole[] = ['FARM_OWNER', 'FARM_MANAGER']
+const ownerManagerFarmer: FarmRole[] = ['FARM_OWNER', 'FARM_MANAGER', 'FARMER']
+const everyRole: FarmRole[] = [...ownerManagerFarmer, 'FIELD_WORKER']
+
 const appRoutes: AppRoute[] = [
-  { path: APP_ROUTES.dashboard, element: <Dashboard /> },
-  { path: APP_ROUTES.farms, element: <FarmManagementPage /> },
-  { path: APP_ROUTES.crops, element: <CropLifecyclePage /> },
-  { path: APP_ROUTES.irrigation, element: <IrrigationSchedulingPage /> },
-  { path: APP_ROUTES.resources, element: <ResourcePlanningPage /> },
-  { path: APP_ROUTES.inventory, element: <InventoryManagementPage /> },
-  { path: APP_ROUTES.equipment, element: <EquipmentManagementPage /> },
-  { path: APP_ROUTES.weather, element: <WeatherMonitoringPage /> },
-  { path: APP_ROUTES.gis, element: <GisMappingPage /> },
-  { path: APP_ROUTES.analytics, element: <AgriculturalAnalyticsPage /> },
+  { path: APP_ROUTES.dashboard, element: <Dashboard />, roles: everyRole },
+  { path: APP_ROUTES.farms, element: <FarmManagementPage />, roles: everyRole },
+  { path: APP_ROUTES.crops, element: <CropLifecyclePage />, roles: ownerManagerFarmer },
+  { path: APP_ROUTES.irrigation, element: <IrrigationSchedulingPage />, roles: ownerManagerFarmer },
+  { path: APP_ROUTES.resources, element: <ResourcePlanningPage />, roles: ownerManager },
+  { path: APP_ROUTES.inventory, element: <InventoryManagementPage />, roles: ownerManager },
+  { path: APP_ROUTES.equipment, element: <EquipmentManagementPage />, roles: ownerManager },
+  { path: APP_ROUTES.weather, element: <WeatherMonitoringPage />, roles: ownerManagerFarmer },
+  { path: APP_ROUTES.gis, element: <GisMappingPage />, roles: ownerManagerFarmer },
+  { path: APP_ROUTES.analytics, element: <AgriculturalAnalyticsPage />, roles: ownerManager },
 ]
 
 class RouteErrorBoundary extends Component<{ children: ReactNode }, ErrorBoundaryState> {
@@ -123,6 +135,16 @@ export function AppRoutes() {
               </PublicRoute>
             }
           />
+          <Route path={APP_ROUTES.verifyEmail} element={<EmailVerificationPage />} />
+          <Route
+            path={APP_ROUTES.ownerSetup}
+            element={
+              <PublicRoute>
+                <InitialOwnerSetupPage />
+              </PublicRoute>
+            }
+          />
+          <Route path={APP_ROUTES.invitationAccept} element={<InvitationAcceptancePage />} />
           <Route
             element={
               <ProtectedRoute>
@@ -131,8 +153,24 @@ export function AppRoutes() {
             }
           >
             {appRoutes.map((route) => (
-              <Route key={route.path} path={route.path} element={route.element} />
+              <Route
+                key={route.path}
+                path={route.path}
+                element={<RoleRoute allowedRoles={route.roles}>{route.element}</RoleRoute>}
+              />
             ))}
+            <Route
+              path={APP_ROUTES.organizationSetup}
+              element={<RoleRoute allowedRoles={['FARM_OWNER']} allowMissingOrganization><OrganizationSetupPage /></RoleRoute>}
+            />
+            <Route
+              path={APP_ROUTES.users}
+              element={<RoleRoute allowedRoles={ownerManagerFarmer}><UserManagementPage /></RoleRoute>}
+            />
+            <Route
+              path={APP_ROUTES.tasks}
+              element={<RoleRoute allowedRoles={everyRole}><TasksPage /></RoleRoute>}
+            />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>

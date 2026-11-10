@@ -1,6 +1,6 @@
-import { useSyncExternalStore } from 'react'
+import { useEffect, useMemo, useState, useSyncExternalStore } from 'react'
 import { ArrowUpRight, CalendarDays, CircleAlert, Leaf, Plus } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { Link, Navigate } from 'react-router-dom'
 import { Card } from '../components/ui/Card'
 import { Table } from '../components/ui/Table'
 import { APP_ROUTES } from '../constants/routes.constants'
@@ -11,6 +11,7 @@ import {
   subscribeFarmManagement,
 } from '../features/farm-management/services/farmManagementService'
 import type { DashboardTask } from '../features/dashboard/types/dashboard.types'
+import { hierarchyService, type CurrentUser } from '../features/user-management/services/hierarchyService'
 
 const taskColumns = [
   {
@@ -36,6 +37,8 @@ const taskColumns = [
 ]
 
 function Dashboard() {
+  const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null)
+  const [profileError, setProfileError] = useState('')
   const currentDate = useCurrentDate()
   const farmSnapshot = useSyncExternalStore(
     subscribeFarmManagement,
@@ -48,6 +51,30 @@ function Dashboard() {
     day: 'numeric',
   }).format(currentDate)
   const hour = currentDate.getHours()
+  useEffect(() => {
+    hierarchyService.getCurrentUser()
+      .then(setCurrentUser)
+      .catch((cause: unknown) => setProfileError(cause instanceof Error ? cause.message : 'Unable to load role information.'))
+  }, [])
+  const modules = useMemo(() => {
+    const allModules = [
+      ['Farm management', APP_ROUTES.farms, 'Fields, people, work, and expenses'],
+      ['Crop lifecycle', APP_ROUTES.crops, 'Crop stages, health, and harvest plans'],
+      ['Irrigation', APP_ROUTES.irrigation, 'Water schedules and field history'],
+      ['Resources', APP_ROUTES.resources, 'Plan inputs, labour, and water'],
+      ['Inventory', APP_ROUTES.inventory, 'Stock levels, purchases, and use'],
+      ['Equipment', APP_ROUTES.equipment, 'Usage and maintenance tracking'],
+      ['Weather', APP_ROUTES.weather, 'Sample forecast and farming notes'],
+      ['Analytics', APP_ROUTES.analytics, 'Sample yield and cost charts'],
+      ['Tasks', APP_ROUTES.tasks, 'Assigned work and task status'],
+    ]
+    const allowed = currentUser?.role === 'FIELD_WORKER'
+      ? new Set([APP_ROUTES.farms, APP_ROUTES.tasks])
+      : currentUser?.role === 'FARMER'
+        ? new Set([APP_ROUTES.farms, APP_ROUTES.crops, APP_ROUTES.irrigation, APP_ROUTES.weather, APP_ROUTES.gis, APP_ROUTES.tasks])
+        : new Set(allModules.map(([, path]) => path))
+    return allModules.filter(([, path]) => allowed.has(path))
+  }, [currentUser?.role])
   const greeting =
     hour >= 5 && hour < 12
       ? 'Good morning'
@@ -57,14 +84,21 @@ function Dashboard() {
           ? 'Good evening'
           : 'Good night'
 
+  if (currentUser?.role === 'FARM_OWNER' && !currentUser.organizationId) {
+    return <Navigate replace to={APP_ROUTES.organizationSetup} />
+  }
+  if (profileError) return <p role="alert">{profileError}</p>
+  if (!currentUser) return <p aria-busy="true">Loading your role-specific dashboard…</p>
+
   return (
     <>
       <div className="page-heading-row">
         <div>
           <p className="eyebrow">{today}</p>
-          <h1 className="page-title">{greeting}, farm team</h1>
+          <h1 className="page-title">{greeting}, {currentUser.fullName}</h1>
           <p className="page-description">
-            Here is a snapshot of your operation. All figures below are illustrative demo data.
+            {currentUser.role.replaceAll('_', ' ')} workspace for {currentUser.organizationName || 'your farm team'}.
+            {' '}Dashboard figures below remain illustrative demo data.
           </p>
         </div>
         <Link className="button button-primary" to={APP_ROUTES.farms}>
@@ -147,16 +181,7 @@ function Dashboard() {
         </div>
       </div>
       <div className="content-grid three">
-        {[
-          ['Farm management', APP_ROUTES.farms, 'Fields, people, work, and expenses'],
-          ['Crop lifecycle', APP_ROUTES.crops, 'Crop stages, health, and harvest plans'],
-          ['Irrigation', APP_ROUTES.irrigation, 'Water schedules and field history'],
-          ['Resources', APP_ROUTES.resources, 'Plan inputs, labour, and water'],
-          ['Inventory', APP_ROUTES.inventory, 'Stock levels, purchases, and use'],
-          ['Equipment', APP_ROUTES.equipment, 'Usage and maintenance tracking'],
-          ['Weather', APP_ROUTES.weather, 'Sample forecast and farming notes'],
-          ['Analytics', APP_ROUTES.analytics, 'Sample yield and cost charts'],
-        ].map(([label, path, description]) => (
+        {modules.map(([label, path, description]) => (
           <Link className="module-link" key={path} to={path}>
             <Card>
               <span className="module-link-title">{label}</span>

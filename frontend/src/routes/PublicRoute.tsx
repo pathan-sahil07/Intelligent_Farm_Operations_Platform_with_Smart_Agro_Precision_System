@@ -9,20 +9,22 @@ interface PublicRouteProps {
 }
 
 export function PublicRoute({ children }: PublicRouteProps) {
-  const { status, checkSession } = useAuthStore()
+  const { status, isInitialized, checkSession } = useAuthStore()
   const location = useLocation()
 
   useEffect(() => {
-    checkSession()
-  }, [checkSession])
+    if (!isInitialized) {
+      checkSession()
+    }
+  }, [checkSession, isInitialized])
 
   if (status === 'loading') {
-    return <AuthLoadingScreen message="Loading workspace…" />
+    return <AuthLoadingScreen />
   }
 
   if (status === 'authenticated') {
-    const from = (location.state as { from?: { pathname: string } })?.from?.pathname || APP_ROUTES.dashboard
-    return <Navigate to={from} replace />
+    const from = (location.state as { from?: { pathname: string; search?: string } })?.from
+    return <Navigate to={from ? `${from.pathname}${from.search ?? ''}` : APP_ROUTES.dashboard} replace />
   }
 
   return children ? <>{children}</> : <Outlet />

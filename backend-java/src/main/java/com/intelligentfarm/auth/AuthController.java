@@ -20,10 +20,18 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
     private final AuthService authService;
+    private final EmailVerificationService emailVerificationService;
+    private final PasswordResetService passwordResetService;
     private final AuthProperties properties;
 
-    public AuthController(AuthService authService, AuthProperties properties) {
+    public AuthController(
+            AuthService authService,
+            EmailVerificationService emailVerificationService,
+            PasswordResetService passwordResetService,
+            AuthProperties properties) {
         this.authService = authService;
+        this.emailVerificationService = emailVerificationService;
+        this.passwordResetService = passwordResetService;
         this.properties = properties;
     }
 
@@ -40,8 +48,32 @@ public class AuthController {
             @Valid @RequestBody AuthDtos.RegistrationRequest body,
             HttpServletRequest request) {
         AuthService.SessionGrant grant = authService.register(
-                body.email(), body.password(), readSessionCookie(request));
-        return authenticated(grant, body.email(), HttpStatus.CREATED);
+                body.email(),
+                body.password(),
+                body.fullName(),
+                body.mobileNumber(),
+                readSessionCookie(request));
+        return authenticated(grant, HttpStatus.OK);
+    }
+
+    @PostMapping("/verify-email")
+    public ResponseEntity<AuthDtos.EmailVerificationResponse> verifyEmail(
+            @Valid @RequestBody AuthDtos.TokenRequest body) {
+        boolean verified = emailVerificationService.verify(body.token());
+        if (!verified) {
+            return ResponseEntity.badRequest().body(new AuthDtos.EmailVerificationResponse(
+                    false, "This verification link is invalid, expired, or already used."));
+        }
+        return ResponseEntity.ok(new AuthDtos.EmailVerificationResponse(
+                true, "Email verified. You can sign in."));
+    }
+
+    @PostMapping("/email-verification/resend")
+    public ResponseEntity<AuthDtos.MessageResponse> resendVerification(
+            @Valid @RequestBody AuthDtos.EmailVerificationRequest body) {
+        emailVerificationService.resend(body.email());
+        return ResponseEntity.accepted().body(new AuthDtos.MessageResponse(
+                "If the account requires verification, instructions will be sent."));
     }
 
     @PostMapping("/login")
@@ -50,7 +82,7 @@ public class AuthController {
             HttpServletRequest request) {
         AuthService.SessionGrant grant = authService.login(
                 body.email(), body.password(), readSessionCookie(request));
-        return authenticated(grant, body.email(), HttpStatus.OK);
+        return authenticated(grant, HttpStatus.OK);
     }
 
     @GetMapping("/session")
@@ -59,9 +91,30 @@ public class AuthController {
         if (identity.isEmpty()) {
             return ResponseEntity.ok()
                     .header(HttpHeaders.SET_COOKIE, clearCookie().toString())
-                    .body(new AuthDtos.AuthResponse(false, null, null));
+                    .body(new AuthDtos.AuthResponse(false, null, null, null, null, null));
         }
-        return ResponseEntity.ok(new AuthDtos.AuthResponse(true, identity.get().email(), null));
+        AuthService.SessionIdentity user = identity.get();
+        return ResponseEntity.ok(new AuthDtos.AuthResponse(
+                true, user.email(), null, null, user.fullName(), user.role()));
+    }
+
+    @PostMapping("/password-reset/request")
+    public ResponseEntity<AuthDtos.MessageResponse> requestPasswordReset(
+            @Valid @RequestBody AuthDtos.PasswordResetRequest body) {
+        passwordResetService.requestReset(body.email());
+        return ResponseEntity.accepted().body(new AuthDtos.MessageResponse(
+                "If the account can be recovered, instructions will be sent."));
+    }
+
+    @PostMapping("/password-reset/complete")
+    public ResponseEntity<AuthDtos.MessageResponse> completePasswordReset(
+            @Valid @RequestBody AuthDtos.PasswordResetCompletion body) {
+        if (!passwordResetService.resetPassword(body.token(), body.newPassword())) {
+            return ResponseEntity.badRequest().body(new AuthDtos.MessageResponse(
+                    "This password reset link is invalid, expired, or already used."));
+        }
+        return ResponseEntity.ok(new AuthDtos.MessageResponse(
+                "Password updated. Please sign in again."));
     }
 
     @PostMapping("/logout")
@@ -72,11 +125,18 @@ public class AuthController {
                 .build();
     }
 
-    private ResponseEntity<AuthDtos.AuthResponse> authenticated(
-            AuthService.SessionGrant grant, String email, HttpStatus status) {
+    ResponseEntity<AuthDtos.AuthResponse> authenticated(
+            AuthService.SessionGrant grant, HttpStatus status) {
+        AuthService.SessionIdentity identity = grant.identity();
         return ResponseEntity.status(status)
                 .header(HttpHeaders.SET_COOKIE, sessionCookie(grant.sessionToken(), grant.expiresAt()).toString())
-                .body(new AuthDtos.AuthResponse(true, email.trim().toLowerCase(java.util.Locale.ROOT), grant.csrfToken()));
+                .body(new AuthDtos.AuthResponse(
+                        true,
+                        identity.email(),
+                        grant.csrfToken(),
+                        null,
+                        identity.fullName(),
+                        identity.role()));
     }
 
     private String readSessionCookie(HttpServletRequest request) {

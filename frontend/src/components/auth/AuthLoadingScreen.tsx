@@ -1,10 +1,6 @@
 import { Leaf } from 'lucide-react'
 
-interface AuthLoadingScreenProps {
-  message?: string
-}
-
-export function AuthLoadingScreen({ message = 'Verifying secure session…' }: AuthLoadingScreenProps) {
+export function AuthLoadingScreen() {
   return (
     <div
       aria-busy="true"
@@ -38,10 +34,10 @@ export function AuthLoadingScreen({ message = 'Verifying secure session…' }: A
           boxShadow: '0 0 24px rgba(34, 197, 94, 0.25)',
         }}
       >
-        <Leaf size={26} color="#4ade80" />
+        <Leaf size={26} color="#4ade80" aria-hidden="true" />
       </div>
 
-      <div style={{ textAlign: 'center' }}>
+      <div style={{ textAlign: 'center', maxWidth: '360px' }}>
         <h2
           style={{
             margin: '0 0 6px 0',
@@ -59,9 +55,10 @@ export function AuthLoadingScreen({ message = 'Verifying secure session…' }: A
             fontSize: '13px',
             color: '#86efac',
             fontWeight: 500,
+            lineHeight: 1.5,
           }}
         >
-          {message}
+          Verifying secure session...
         </p>
       </div>
     </div>
@@ -69,4 +66,3 @@ export function AuthLoadingScreen({ message = 'Verifying secure session…' }: A
 }
 
 export default AuthLoadingScreen
-

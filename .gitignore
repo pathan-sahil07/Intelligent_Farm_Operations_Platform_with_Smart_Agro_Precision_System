@@ -12,6 +12,7 @@ target/
 .env
 .env.*
 !.env.example
+backend-java/.env
 
 # Logs
 *.log

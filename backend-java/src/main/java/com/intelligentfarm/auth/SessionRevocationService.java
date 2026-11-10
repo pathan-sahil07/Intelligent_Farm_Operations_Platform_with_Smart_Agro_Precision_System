@@ -5,7 +5,7 @@ import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
 
-public final class SessionRevocationService {
+public class SessionRevocationService {
 
     private final AccountRepository accountRepository;
     private final Clock clock;

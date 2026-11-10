@@ -6,7 +6,10 @@ export interface LoginCredentials {
 export interface RegistrationData {
   email: string
   password: string
-  fullName?: string
+  fullName: string
+  mobileNumber: string
+  role: 'FARM_OWNER' | 'FARM_MANAGER' | 'FARMER' | 'FIELD_WORKER'
+  invitationToken?: string
 }
 
 export interface CsrfResponse {
@@ -17,14 +20,16 @@ export interface AuthResponse {
   authenticated: boolean
   email: string | null
   csrfToken?: string | null
+  verificationMode?: 'local-console' | 'smtp'
 }
 
 export interface AuthUser {
   email: string
   fullName?: string
+  role?: string
 }
 
-export type AuthStatus = 'loading' | 'authenticated' | 'unauthenticated'
+export type AuthStatus = 'loading' | 'authenticated' | 'unauthenticated' | 'error'
 
 export interface AuthState {
   user: AuthUser | null
@@ -38,6 +43,5 @@ export interface AuthState {
 export interface RegisterResult {
   user: AuthUser | null
   requiresLogin: boolean
+  verificationMode?: AuthResponse['verificationMode']
 }
-
-

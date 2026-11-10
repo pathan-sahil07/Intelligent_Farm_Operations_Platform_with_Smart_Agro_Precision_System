@@ -74,18 +74,21 @@ export default function Login() {
       await login({ email: email.trim(), password })
       setStatusType('success')
       setStatus(t.msgLoginSuccess)
-      const from = (location.state as { from?: { pathname: string } })?.from?.pathname || APP_ROUTES.dashboard
-      navigate(from, { replace: true })
-    } catch (err: any) {
+      const from = (location.state as { from?: { pathname: string; search?: string } })?.from
+      navigate(from ? `${from.pathname}${from.search ?? ''}` : APP_ROUTES.dashboard, { replace: true })
+    } catch (err: unknown) {
       setIsSubmitting(false)
       setStatusType('error')
 
-      const message = err?.message || ''
-      const code = err?.code || ''
+      const message = err instanceof Error ? err.message : ''
+      const code = err instanceof Error && 'code' in err && typeof err.code === 'string' ? err.code : ''
+      const status = err instanceof Error && 'status' in err && typeof err.status === 'number'
+        ? err.status
+        : undefined
 
       if (code === 'invalid_credentials' || message.toLowerCase().includes('invalid')) {
         setStatus(t.errInvalidCredentials)
-      } else if (err?.status === 0 || err?.name === 'TypeError' || message.includes('Failed to fetch')) {
+      } else if (status === 0 || (err instanceof Error && err.name === 'TypeError') || message.includes('Failed to fetch')) {
         setStatus(t.errServerConnection)
       } else {
         setStatus(message || t.errServerConnection)

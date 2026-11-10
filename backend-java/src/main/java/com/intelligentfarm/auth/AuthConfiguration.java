@@ -28,8 +28,22 @@ public class AuthConfiguration {
                 || properties.getCookie().getPath() == null
                 || properties.getCookie().getPath().isBlank()
                 || !properties.getCookie().isHostCookieConfigurationValid()
-                || !properties.getCookie().isCookiePolicyValid()) {
-            throw new IllegalStateException("Invalid farm.auth session or cookie configuration");
+                || !properties.getCookie().isCookiePolicyValid()
+                || !("local-console".equals(properties.getEmail().getMode())
+                        || "smtp".equals(properties.getEmail().getMode()))
+                || properties.getEmail().getBaseUrl() == null
+                || properties.getEmail().getBaseUrl().isBlank()
+                || properties.getEmail().getVerificationTokenTimeout() == null
+                || properties.getEmail().getVerificationTokenTimeout().isNegative()
+                || properties.getEmail().getVerificationTokenTimeout().isZero()
+                || properties.getEmail().getInvitationTimeout() == null
+                || properties.getEmail().getInvitationTimeout().isNegative()
+                || properties.getEmail().getInvitationTimeout().isZero()
+                || ("smtp".equals(properties.getEmail().getMode())
+                        && (properties.getEmail().getFromAddress() == null
+                                || properties.getEmail().getFromAddress().isBlank()
+                                || environment.getProperty("spring.mail.host", "").isBlank()))) {
+            throw new IllegalStateException("Invalid farm.auth session, cookie, or email configuration");
         }
         return properties;
     }

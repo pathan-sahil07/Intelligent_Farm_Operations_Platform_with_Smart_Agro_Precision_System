@@ -37,4 +37,18 @@ public class AuthExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(new AuthDtos.ErrorResponse("invalid_credentials", exception.getMessage()));
     }
+
+    @ExceptionHandler(AuthService.UnverifiedAccountException.class)
+    public ResponseEntity<AuthDtos.ErrorResponse> unverified(
+            AuthService.UnverifiedAccountException exception) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(new AuthDtos.ErrorResponse("email_not_verified", exception.getMessage()));
+    }
+
+    @ExceptionHandler(InvitationService.InvitationException.class)
+    public ResponseEntity<AuthDtos.ErrorResponse> invitation(
+            InvitationService.InvitationException exception) {
+        return ResponseEntity.status(exception.getStatus())
+                .body(new AuthDtos.ErrorResponse(exception.getCode(), exception.getMessage()));
+    }
 }

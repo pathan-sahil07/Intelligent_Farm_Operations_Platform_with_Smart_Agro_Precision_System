@@ -23,6 +23,11 @@ public interface AccountRepository {
     boolean updatePasswordHashAndIncrementAuthVersion(
             UUID id, String passwordHash, Instant updatedAt);
 
+    boolean markEmailVerified(UUID id, Instant verifiedAt);
+
+    boolean assignRoleAndActivateIfUnassigned(
+            UUID id, FarmRole role, String fullName, String mobileNumber, Instant verifiedAt);
+
     /**
      * Atomically increment auth_version and set updated_at. Returns false when no account has
      * the given ID.

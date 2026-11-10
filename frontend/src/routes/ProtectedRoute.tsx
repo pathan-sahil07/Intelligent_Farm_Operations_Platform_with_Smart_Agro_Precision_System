@@ -17,11 +17,24 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   }, [checkSession])
 
   if (status === 'loading') {
-    return <AuthLoadingScreen message="Verifying secure session…" />
+    return <AuthLoadingScreen />
+  }
+
+  if (status === 'error') {
+    return <Navigate to={APP_ROUTES.signup} replace state={{ from: location }} />
   }
 
   if (status === 'unauthenticated') {
-    return <Navigate to={APP_ROUTES.login} replace state={{ from: location }} />
+    const destination = location.pathname === APP_ROUTES.dashboard
+      ? APP_ROUTES.signup
+      : APP_ROUTES.login
+    return (
+      <Navigate
+        to={destination}
+        replace
+        state={destination === APP_ROUTES.login ? { from: location } : undefined}
+      />
+    )
   }
 
   return children ? <>{children}</> : <Outlet />

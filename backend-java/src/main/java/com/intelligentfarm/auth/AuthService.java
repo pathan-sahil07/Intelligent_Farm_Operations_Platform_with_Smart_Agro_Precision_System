@@ -17,7 +17,9 @@ public class AuthService {
     private final SessionTokenService tokenService;
     private final PasswordEncoder passwordEncoder;
     private final AuthProperties properties;
+    private final EmailVerificationService emailVerificationService;
     private final Clock clock;
+    private final String dummyPasswordHash;
 
     public AuthService(
             AccountRepository accountRepository,
@@ -25,25 +27,36 @@ public class AuthService {
             SessionTokenService tokenService,
             PasswordEncoder passwordEncoder,
             AuthProperties properties,
+            EmailVerificationService emailVerificationService,
             Clock clock) {
         this.accountRepository = Objects.requireNonNull(accountRepository, "accountRepository");
         this.sessionRepository = Objects.requireNonNull(sessionRepository, "sessionRepository");
         this.tokenService = Objects.requireNonNull(tokenService, "tokenService");
         this.passwordEncoder = Objects.requireNonNull(passwordEncoder, "passwordEncoder");
         this.properties = Objects.requireNonNull(properties, "properties");
+        this.emailVerificationService =
+                Objects.requireNonNull(emailVerificationService, "emailVerificationService");
         this.clock = Objects.requireNonNull(clock, "clock");
+        this.dummyPasswordHash = passwordEncoder.encode(UUID.randomUUID().toString());
     }
 
     @Transactional
-    public SessionGrant register(String emailValue, String password, String presentedSessionToken) {
+    public SessionGrant register(
+            String emailValue,
+            String password,
+            String fullName,
+            String mobileNumber,
+            String presentedSessionToken) {
         String email = normalizeEmail(emailValue);
-        validatePassword(password);
+        validateProfile(fullName, mobileNumber);
+        PasswordPolicy.validate(password);
         if (accountRepository.findByEmail(email).isPresent()) {
             throw new ConflictException("An account with this email already exists.");
         }
 
         Instant now = Instant.now(clock);
-        Account account = Account.create(email, passwordEncoder.encode(password), now);
+        Account account = Account.createVerifiedMember(
+                email, passwordEncoder.encode(password), fullName, mobileNumber, FarmRole.FARM_OWNER, now);
         if (!accountRepository.createIfAbsent(account)) {
             throw new ConflictException("An account with this email already exists.");
         }
@@ -54,11 +67,36 @@ public class AuthService {
     @Transactional
     public SessionGrant login(String emailValue, String password, String presentedSessionToken) {
         String email = normalizeEmail(emailValue);
-        if (password == null || password.isBlank() || password.codePointCount(0, password.length()) > 1024) {
+        if (password == null || password.isBlank()
+                || password.codePointCount(0, password.length()) > 1024) {
             throw new UnauthorizedException();
         }
-        Account account = accountRepository.findByEmail(email)
-                .filter(candidate -> passwordEncoder.matches(password, candidate.getPasswordHash()))
+
+        Optional<Account> account = accountRepository.findByEmail(email);
+        boolean passwordMatches = account
+                .map(candidate -> passwordEncoder.matches(password, candidate.getPasswordHash()))
+                .orElseGet(() -> passwordEncoder.matches(password, dummyPasswordHash));
+        if (!passwordMatches || account.isEmpty()) {
+            throw new UnauthorizedException();
+        }
+        if (account.get().getStatus() == AccountStatus.PENDING_VERIFICATION
+                && account.get().getRole() != null
+                && account.get().getEmailVerifiedAt() == null) {
+            throw new UnverifiedAccountException();
+        }
+        if (!account.get().isEligibleForAuthentication()) {
+            throw new UnauthorizedException();
+        }
+
+        Instant now = Instant.now(clock);
+        revokePresentedSession(presentedSessionToken, now);
+        return createAuthenticatedSession(account.get(), now);
+    }
+
+    @Transactional
+    public SessionGrant authenticateAccount(UUID accountId, String presentedSessionToken) {
+        Account account = accountRepository.findById(Objects.requireNonNull(accountId, "accountId"))
+                .filter(Account::isEligibleForAuthentication)
                 .orElseThrow(UnauthorizedException::new);
         Instant now = Instant.now(clock);
         revokePresentedSession(presentedSessionToken, now);
@@ -75,7 +113,8 @@ public class AuthService {
             Session session = existing.get();
             if (sessionRepository.updateCsrfTokenHash(
                     session.getId(), tokenService.hashToken(csrfToken))) {
-                return new SessionGrant(presentedToken, csrfToken, session.getAbsoluteExpiresAt());
+                return new SessionGrant(
+                        presentedToken, csrfToken, session.getAbsoluteExpiresAt(), null);
             }
         }
 
@@ -93,27 +132,37 @@ public class AuthService {
                 null,
                 null);
         sessionRepository.save(session);
-        return new SessionGrant(sessionToken, csrfToken, expiresAt);
+        return new SessionGrant(sessionToken, csrfToken, expiresAt, null);
     }
 
     @Transactional
     public Optional<SessionIdentity> validateSession(String presentedToken) {
         Instant now = Instant.now(clock);
         Optional<Session> valid = findValidSession(presentedToken, now);
-        if (valid.isEmpty()) return Optional.empty();
+        if (valid.isEmpty()) {
+            return Optional.empty();
+        }
 
         Session session = valid.get();
-        if (!sessionRepository.updateLastActivity(session.getId(), now)) return Optional.empty();
-        if (session.getKind() == SessionKind.PRE_AUTH) {
+        if (!sessionRepository.updateLastActivity(session.getId(), now)
+                || session.getKind() == SessionKind.PRE_AUTH) {
             return Optional.empty();
         }
         return accountRepository.findById(session.getAccountId())
-                .map(account -> new SessionIdentity(account.getEmail(), session.getAbsoluteExpiresAt()));
+                .filter(Account::isEligibleForAuthentication)
+                .map(account -> new SessionIdentity(
+                        account.getId(),
+                        account.getEmail(),
+                        account.getFullName(),
+                        account.getRole(),
+                        session.getAbsoluteExpiresAt()));
     }
 
     @Transactional
     public boolean isCsrfValid(String presentedToken, String csrfToken) {
-        if (csrfToken == null || csrfToken.isBlank()) return false;
+        if (csrfToken == null || csrfToken.isBlank()) {
+            return false;
+        }
         return findValidSession(presentedToken, Instant.now(clock))
                 .map(session -> tokenService.matches(csrfToken, session.getCsrfTokenHash()))
                 .orElse(false);
@@ -126,7 +175,9 @@ public class AuthService {
     }
 
     private void revokePresentedSession(String presentedToken, Instant now) {
-        if (presentedToken == null || presentedToken.isBlank()) return;
+        if (presentedToken == null || presentedToken.isBlank()) {
+            return;
+        }
         sessionRepository.findByTokenHash(tokenService.hashToken(presentedToken))
                 .ifPresent(session -> sessionRepository.revoke(session.getId(), now));
     }
@@ -147,13 +198,20 @@ public class AuthService {
                 account.getId(),
                 account.getAuthVersion());
         sessionRepository.save(session);
-        return new SessionGrant(sessionToken, csrfToken, expiresAt);
+        SessionIdentity identity = new SessionIdentity(
+                account.getId(), account.getEmail(), account.getFullName(),
+                account.getRole(), expiresAt);
+        return new SessionGrant(sessionToken, csrfToken, expiresAt, identity);
     }
 
     private Optional<Session> findValidSession(String presentedToken, Instant now) {
-        if (presentedToken == null || presentedToken.isBlank()) return Optional.empty();
+        if (presentedToken == null || presentedToken.isBlank()) {
+            return Optional.empty();
+        }
         Optional<Session> found = sessionRepository.findByTokenHash(tokenService.hashToken(presentedToken));
-        if (found.isEmpty()) return Optional.empty();
+        if (found.isEmpty()) {
+            return Optional.empty();
+        }
         Session session = found.get();
         Instant idleExpiry = session.getLastActivityAt().plus(properties.getIdleTimeout());
         boolean expired = session.getRevokedAt() != null
@@ -165,7 +223,9 @@ public class AuthService {
         }
         if (session.getKind() == SessionKind.AUTHENTICATED) {
             Optional<Account> account = accountRepository.findById(session.getAccountId());
-            if (account.isEmpty() || account.get().getAuthVersion() != session.getAuthVersion()) {
+            if (account.isEmpty()
+                    || !account.get().isEligibleForAuthentication()
+                    || account.get().getAuthVersion() != session.getAuthVersion()) {
                 sessionRepository.revoke(session.getId(), now);
                 return Optional.empty();
             }
@@ -181,36 +241,45 @@ public class AuthService {
         }
     }
 
-    private static void validatePassword(String password) {
-        if (password == null) throw new ValidationException("Password is required.");
-        int characters = password.codePointCount(0, password.length());
-        if (characters < 8 || characters > 1024) {
-            throw new ValidationException("Password must be between 8 and 1024 characters.");
+    private static void validateProfile(String fullName, String mobileNumber) {
+        if (fullName == null || fullName.isBlank() || fullName.trim().length() > 255) {
+            throw new ValidationException("Enter a full name of no more than 255 characters.");
         }
-        boolean letter = password.codePoints().anyMatch(Character::isLetter);
-        boolean digit = password.codePoints().anyMatch(Character::isDigit);
-        boolean special = password.codePoints().anyMatch(codePoint ->
-                !Character.isLetterOrDigit(codePoint) && !Character.isWhitespace(codePoint));
-        if (!letter || !digit || !special) {
-            throw new ValidationException("Password must include a letter, a number, and a special symbol.");
-        }
+        MobileNumberPolicy.normalizeAndValidate(mobileNumber, true);
     }
 
-    public record SessionGrant(String sessionToken, String csrfToken, Instant expiresAt) {
+    public record RegistrationResult(String email, String verificationMode) {
     }
 
-    public record SessionIdentity(String email, Instant expiresAt) {
+    public record SessionGrant(
+            String sessionToken, String csrfToken, Instant expiresAt, SessionIdentity identity) {
+    }
+
+    public record SessionIdentity(
+            UUID accountId, String email, String fullName, FarmRole role, Instant expiresAt) {
     }
 
     public static class ValidationException extends RuntimeException {
-        public ValidationException(String message) { super(message); }
+        public ValidationException(String message) {
+            super(message);
+        }
     }
 
     public static class ConflictException extends RuntimeException {
-        public ConflictException(String message) { super(message); }
+        public ConflictException(String message) {
+            super(message);
+        }
     }
 
     public static class UnauthorizedException extends RuntimeException {
-        public UnauthorizedException() { super("Invalid email or password."); }
+        public UnauthorizedException() {
+            super("Invalid email or password.");
+        }
+    }
+
+    public static class UnverifiedAccountException extends RuntimeException {
+        public UnverifiedAccountException() {
+            super("Verify your email address before signing in.");
+        }
     }
 }

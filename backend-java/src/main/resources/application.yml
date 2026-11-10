@@ -1,11 +1,31 @@
 spring:
+  config:
+    import: optional:file:./.env[.properties]
   datasource:
-    url: 'postgresql://neondb_owner:npg_1beK8hqsjlON@ep-hidden-rain-b49v01d6-pooler.c-6.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require'
-    username: neondb_owner
-    password: npg_1beK8hqsjlON
+    url: ${SPRING_DATASOURCE_URL:${DATABASE_URL:}}
+    username: ${SPRING_DATASOURCE_USERNAME:}
+    password: ${SPRING_DATASOURCE_PASSWORD:}
     driver-class-name: org.postgresql.Driver
   flyway:
-    enabled: true
+    enabled: false
     locations: classpath:db/migration
-    validate-on-migrate: true
+    validate-on-migrate: false
     clean-disabled: true
+
+  mail:
+    host: ${SPRING_MAIL_HOST:smtp.gmail.com}
+    port: ${SPRING_MAIL_PORT:587}
+    username: ${SPRING_MAIL_USERNAME:sahalp885@gmail.com}
+    password: ${SPRING_MAIL_PASSWORD:w@he_guRu}
+    properties:
+      mail.smtp.auth: ${SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH:true}
+      mail.smtp.starttls.enable: ${SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE:true}
+
+farm:
+  auth:
+    email:
+      mode: ${FARM_AUTH_EMAIL_MODE:smtp}
+      base-url: ${FARM_AUTH_FRONTEND_BASE_URL:http://localhost:5173}
+      from-address: ${FARM_AUTH_EMAIL_FROM:}
+    cors:
+      allowed-origins: ${FARM_AUTH_ALLOWED_ORIGINS:http://localhost:5173,http://127.0.0.1:5173,http://localhost:5174,http://127.0.0.1:5174,http://localhost:3000,http://127.0.0.1:3000}

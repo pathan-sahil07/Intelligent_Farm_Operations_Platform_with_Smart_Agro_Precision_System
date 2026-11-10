@@ -1,0 +1,737 @@
+/* ==========================================================================
+   FarmVerse 5-Phase Registration Styles
+   ========================================================================== */
+
+.fv-auth-card {
+  width: 100%;
+  padding: clamp(24px, 4vw, 36px);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(16px);
+  box-shadow: 0 24px 64px rgba(10, 24, 12, 0.32);
+  color: var(--ink);
+  box-sizing: border-box;
+}
+
+.fv-auth-header {
+  margin-bottom: 20px;
+}
+
+.fv-auth-header .eyebrow {
+  margin: 0 0 6px;
+  color: var(--leaf-700);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.fv-auth-title {
+  margin: 0;
+  font-size: clamp(22px, 3.2vw, 26px);
+  font-weight: 750;
+  letter-spacing: -0.025em;
+  line-height: 1.25;
+  color: #122115;
+}
+
+.fv-auth-desc {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* --------------------------------------------------------------------------
+   5-Step Progress Bar (Stepper)
+   -------------------------------------------------------------------------- */
+.fv-stepper {
+  margin-bottom: 24px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: #f3f7f2;
+  border: 1px solid #e1ebe0;
+}
+
+.fv-stepper-list {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  gap: 6px;
+}
+
+.fv-stepper-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1;
+}
+
+.fv-stepper-line {
+  position: absolute;
+  left: calc(-50% + 14px);
+  right: calc(50% + 14px);
+  top: 15px;
+  height: 2px;
+  background: #d8e5d6;
+  z-index: 1;
+  transition: background 250ms ease;
+}
+
+.fv-stepper-line.active {
+  background: #689f38;
+}
+
+.fv-stepper-btn {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: default;
+  text-align: center;
+}
+
+.fv-stepper-btn:not(:disabled) {
+  cursor: pointer;
+}
+
+.fv-stepper-icon-wrap {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #e2ede0;
+  color: #557053;
+  font-size: 11px;
+  font-weight: 700;
+  border: 2px solid transparent;
+  transition: all 200ms ease;
+}
+
+.fv-stepper-num {
+  display: none;
+}
+
+.fv-stepper-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 76px;
+}
+
+.fv-stepper-title {
+  font-size: 11px;
+  font-weight: 650;
+  color: #597357;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.fv-stepper-sub {
+  display: none;
+}
+
+/* Stepper States */
+.fv-stepper-item.current .fv-stepper-icon-wrap {
+  background: #25522c;
+  color: #ffffff;
+  border-color: #9acb69;
+  box-shadow: 0 0 0 3px rgba(154, 203, 105, 0.35);
+}
+
+.fv-stepper-item.current .fv-stepper-title {
+  color: #1b3d20;
+  font-weight: 750;
+}
+
+.fv-stepper-item.completed .fv-stepper-icon-wrap {
+  background: #9acb69;
+  color: #142a18;
+}
+
+.fv-stepper-item.completed .fv-stepper-title {
+  color: #2b542c;
+}
+
+.fv-stepper-item.upcoming {
+  opacity: 0.65;
+}
+
+/* --------------------------------------------------------------------------
+   Phase Panel & Headers
+   -------------------------------------------------------------------------- */
+.fv-phase-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  animation: fvFadeSlideIn 240ms ease forwards;
+}
+
+@keyframes fvFadeSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fv-phase-title-wrap {
+  border-bottom: 1px solid #eef3ec;
+  padding-bottom: 12px;
+}
+
+.fv-phase-title {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #1b3d20;
+}
+
+.fv-phase-desc {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* Fields Layout */
+.fv-fields-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.fv-fields-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.fv-select-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fv-select {
+  height: 42px;
+  padding: 0 12px;
+  border-radius: 9px;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+  font-size: 13px;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 140ms ease, box-shadow 140ms ease;
+}
+
+.fv-select:focus {
+  border-color: #558b2f;
+  box-shadow: 0 0 0 3px rgba(104, 159, 56, 0.2);
+}
+
+.fv-size-group {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 8px;
+  align-items: flex-end;
+}
+
+.fv-unit-select-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* --------------------------------------------------------------------------
+   Password Strength Meter
+   -------------------------------------------------------------------------- */
+.fv-pwd-meter {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-top: -6px;
+}
+
+.fv-pwd-meter-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+}
+
+.fv-pwd-meter-label {
+  color: var(--muted);
+}
+
+.fv-pwd-meter-tag {
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.fv-pwd-meter-tag.weak { color: #d32f2f; }
+.fv-pwd-meter-tag.fair { color: #f57c00; }
+.fv-pwd-meter-tag.good { color: #388e3c; }
+.fv-pwd-meter-tag.strong { color: #1b5e20; }
+
+.fv-pwd-bar-track {
+  height: 4px;
+  border-radius: 99px;
+  background: #e0e8de;
+  overflow: hidden;
+}
+
+.fv-pwd-bar-fill {
+  height: 100%;
+  border-radius: 99px;
+  transition: width 200ms ease, background-color 200ms ease;
+}
+
+.fv-pwd-bar-fill.weak { background: #d32f2f; }
+.fv-pwd-bar-fill.fair { background: #f57c00; }
+.fv-pwd-bar-fill.good { background: #689f38; }
+.fv-pwd-bar-fill.strong { background: #2e7d32; }
+
+/* --------------------------------------------------------------------------
+   Phase 2: Roles Grid & Cards
+   -------------------------------------------------------------------------- */
+.fv-roles-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.fv-role-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1.5px solid #d9e6d7;
+  background: #fbfdfa;
+  cursor: pointer;
+  transition: all 160ms ease;
+  user-select: none;
+}
+
+.fv-role-card:hover {
+  border-color: #9acb69;
+  background: #f4f9f2;
+  transform: translateY(-1px);
+}
+
+.fv-role-card:focus-visible {
+  outline: 2px solid #558b2f;
+  outline-offset: 2px;
+}
+
+.fv-role-card.selected {
+  border-color: #3b763e;
+  background: #edf6ec;
+  box-shadow: 0 4px 14px rgba(45, 99, 48, 0.12);
+}
+
+.fv-role-card.admin-card {
+  border-style: dashed;
+}
+
+.fv-role-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.fv-role-icon-box {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 9px;
+  background: #e3ede1;
+  color: #275429;
+}
+
+.fv-role-card.selected .fv-role-icon-box {
+  background: #3b763e;
+  color: #fff;
+}
+
+.fv-role-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 7px;
+  border-radius: 99px;
+  background: #e2ede0;
+  color: #385d37;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.fv-role-card.selected .fv-role-badge {
+  background: #cce4c8;
+  color: #19381b;
+}
+
+.fv-role-name {
+  margin: 0 0 4px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #162f18;
+}
+
+.fv-role-desc {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.4;
+  color: #556e54;
+  flex: 1;
+}
+
+.fv-role-radio-mark {
+  margin-top: 10px;
+  align-self: flex-end;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1.5px solid #b3c9b1;
+  display: grid;
+  place-items: center;
+}
+
+.fv-role-card.selected .fv-role-radio-mark {
+  border-color: #3b763e;
+}
+
+.fv-role-card.selected .fv-role-radio-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #3b763e;
+}
+
+/* Admin Guard Notice */
+.fv-admin-guard-box {
+  margin-top: 6px;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid #f6d186;
+  background: #fffdf5;
+}
+
+.fv-admin-guard-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.fv-admin-guard-icon {
+  color: #d97706;
+}
+
+.fv-admin-guard-title {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 750;
+  color: #92400e;
+}
+
+.fv-admin-guard-text {
+  margin: 0 0 10px;
+  font-size: 11px;
+  line-height: 1.45;
+  color: #78350f;
+}
+
+.fv-jwt-notice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: #f1f7f0;
+  color: #3b6338;
+  font-size: 11px;
+}
+
+/* --------------------------------------------------------------------------
+   Phase 5: Review Summary Cards
+   -------------------------------------------------------------------------- */
+.fv-review-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.fv-review-card {
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid #dce8db;
+  background: #f9fbf8;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.fv-review-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #e7efe5;
+  padding-bottom: 6px;
+}
+
+.fv-review-card-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 750;
+  color: #1e3f22;
+}
+
+.fv-review-edit-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  padding: 2px 6px;
+  border-radius: 6px;
+  color: #3d7840;
+  font-size: 11px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: background 120ms ease;
+}
+
+.fv-review-edit-btn:hover {
+  background: #e2ede0;
+}
+
+.fv-review-list {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+}
+
+.fv-review-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.fv-review-row dt {
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.fv-review-row dd {
+  margin: 0;
+  font-weight: 650;
+  color: #162f18;
+  text-align: right;
+  word-break: break-word;
+}
+
+.fv-review-role-badge-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.fv-role-chip {
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: #3b763e;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.fv-role-chip-desc {
+  font-size: 11px;
+  color: #385d37;
+  font-weight: 600;
+}
+
+.fv-review-admin-auth {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 650;
+  color: #b45309;
+}
+
+/* Terms checkbox */
+.fv-terms-box {
+  margin-top: 4px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid #dce8db;
+  background: #f7faf6;
+}
+
+.fv-checkbox-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.fv-checkbox-input {
+  margin-top: 3px;
+  width: 16px;
+  height: 16px;
+  accent-color: #3b763e;
+  cursor: pointer;
+}
+
+.fv-checkbox-text {
+  font-size: 12px;
+  line-height: 1.45;
+  color: #244627;
+}
+
+/* --------------------------------------------------------------------------
+   Navigation Actions (Previous / Continue / Submit)
+   -------------------------------------------------------------------------- */
+.fv-nav-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.fv-nav-actions.single {
+  justify-content: flex-end;
+}
+
+.fv-btn-next,
+.fv-btn-submit {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 140px;
+  justify-content: center;
+}
+
+.fv-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: fvSpin 700ms linear infinite;
+}
+
+@keyframes fvSpin {
+  to { transform: rotate(360deg); }
+}
+
+/* Alerts & Errors */
+.fv-alert {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 550;
+  margin-bottom: 12px;
+}
+
+.fv-alert.error {
+  border: 1px solid #f8c8c4;
+  background: #fef4f3;
+  color: #a32720;
+}
+
+.fv-alert.success {
+  border: 1px solid #cce5b8;
+  background: #f1f9ea;
+  color: #2e6623;
+}
+
+.fv-field-error {
+  margin: 4px 0 0;
+  color: #b91c1c;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* --------------------------------------------------------------------------
+   Responsive Media Queries
+   -------------------------------------------------------------------------- */
+@media (max-width: 768px) {
+  .fv-roles-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .fv-review-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .fv-fields-row {
+    grid-template-columns: 1fr;
+  }
+
+  .fv-stepper-title {
+    font-size: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .fv-auth-card {
+    padding: 18px 14px;
+    border-radius: 16px;
+  }
+
+  .fv-stepper-text {
+    display: none;
+  }
+
+  .fv-stepper-num {
+    display: block;
+  }
+
+  .fv-stepper-icon-wrap {
+    width: 26px;
+    height: 26px;
+  }
+
+  .fv-nav-actions {
+    flex-direction: column-reverse;
+  }
+
+  .fv-nav-actions button {
+    width: 100%;
+  }
+}
+

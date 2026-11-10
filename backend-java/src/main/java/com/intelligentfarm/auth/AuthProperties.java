@@ -41,6 +41,10 @@ public class AuthProperties {
     @NotNull
     private final RateLimits rateLimits = new RateLimits();
 
+    @Valid
+    @NotNull
+    private final Email email = new Email();
+
     @AssertTrue(message = "idle-timeout must be positive and shorter than absolute-timeout")
     public boolean isSessionTimeoutConfigurationValid() {
         return isPositive(idleTimeout)
@@ -96,6 +100,67 @@ public class AuthProperties {
 
     public RateLimits getRateLimits() {
         return rateLimits;
+    }
+
+    public Email getEmail() {
+        return email;
+    }
+
+    public static class Email {
+
+        private String mode = "smtp";
+
+        @NotBlank
+        private String baseUrl = "http://localhost:5173";
+
+        @NotBlank
+        private String fromAddress = "no-reply@farmverse.invalid";
+
+        @NotNull
+        private Duration verificationTokenTimeout = Duration.ofHours(24);
+
+        @NotNull
+        private Duration invitationTimeout = Duration.ofDays(7);
+
+        public String getMode() {
+            return mode;
+        }
+
+        public void setMode(String mode) {
+            this.mode = mode;
+        }
+
+        public String getBaseUrl() {
+            return baseUrl;
+        }
+
+        public void setBaseUrl(String baseUrl) {
+            this.baseUrl = baseUrl;
+        }
+
+        public String getFromAddress() {
+            return fromAddress;
+        }
+
+        public void setFromAddress(String fromAddress) {
+            this.fromAddress = fromAddress;
+        }
+
+        public Duration getVerificationTokenTimeout() {
+            return verificationTokenTimeout;
+        }
+
+        public void setVerificationTokenTimeout(Duration verificationTokenTimeout) {
+            this.verificationTokenTimeout = verificationTokenTimeout;
+        }
+
+        public Duration getInvitationTimeout() {
+            return invitationTimeout;
+        }
+
+        public void setInvitationTimeout(Duration invitationTimeout) {
+            this.invitationTimeout = invitationTimeout;
+        }
     }
 
     public static class Cookie {

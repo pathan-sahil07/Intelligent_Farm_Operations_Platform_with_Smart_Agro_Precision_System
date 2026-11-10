@@ -1,10 +1,11 @@
-import { useState, useSyncExternalStore, type FormEvent } from 'react'
+import { useEffect, useState, useSyncExternalStore, type FormEvent } from 'react'
 import { Plus, Users, Wallet, Wheat } from 'lucide-react'
 import { Button } from '../../../components/ui/Button'
 import { Card } from '../../../components/ui/Card'
 import { Input } from '../../../components/ui/Input'
 import { Modal } from '../../../components/ui/Modal'
 import { Table } from '../../../components/ui/Table'
+import { hierarchyService, type CurrentUser, type Farm as OrganizationFarm } from '../../user-management/services/hierarchyService'
 import {
   createField,
   getFarmAcreageSummary,
@@ -25,6 +26,20 @@ function FarmManagementPage() {
   const acreage = getFarmAcreageSummary(undefined, snapshot)
   const [modalOpen, setModalOpen] = useState(false)
   const [formError, setFormError] = useState('')
+  const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null)
+  const [organizationFarms, setOrganizationFarms] = useState<OrganizationFarm[]>([])
+  const [farmModalOpen, setFarmModalOpen] = useState(false)
+  const [farmError, setFarmError] = useState('')
+  const [farmNotice, setFarmNotice] = useState('')
+
+  useEffect(() => {
+    Promise.all([hierarchyService.getCurrentUser(), hierarchyService.listFarms()])
+      .then(([user, farms]) => {
+        setCurrentUser(user)
+        setOrganizationFarms(farms)
+      })
+      .catch((cause: unknown) => setFarmError(cause instanceof Error ? cause.message : 'Unable to load your saved farms.'))
+  }, [])
 
   function addField(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -52,6 +67,37 @@ function FarmManagementPage() {
     setFormError('')
     setModalOpen(false)
     event.currentTarget.reset()
+  }
+
+  async function addOrganizationFarm(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    const form = event.currentTarget
+    const formData = new FormData(form)
+    const areaValue = String(formData.get('area') ?? '')
+    const area = areaValue ? Number(areaValue) : null
+    if (area === null || !Number.isFinite(area) || area < 0.01) {
+      setFarmError('Enter a farm area greater than zero.')
+      return
+    }
+
+    setFarmError('')
+    setFarmNotice('')
+    try {
+      const farm = await hierarchyService.createFarm({
+        name: String(formData.get('name') ?? '').trim(),
+        location: String(formData.get('location') ?? '').trim(),
+        address: String(formData.get('address') ?? '').trim(),
+        area,
+        areaUnit: String(formData.get('areaUnit') ?? 'acre'),
+        description: String(formData.get('description') ?? '').trim(),
+      })
+      setOrganizationFarms((current) => [...current, farm])
+      setFarmNotice(`${farm.name} was saved to your organization.`)
+      setFarmModalOpen(false)
+      form.reset()
+    } catch (cause) {
+      setFarmError(cause instanceof Error ? cause.message : 'Unable to save this farm.')
+    }
   }
 
   const fieldColumns = [
@@ -99,6 +145,35 @@ function FarmManagementPage() {
     { key: 'amount', header: 'Amount', render: (expense: FarmExpense) => currency.format(expense.amount) },
   ]
 
+  if (currentUser?.role === 'FIELD_WORKER') {
+    return (
+      <>
+        <div className="page-heading-row">
+          <div>
+            <p className="eyebrow">Assigned farm information</p>
+            <h1 className="page-title">Your farm and field</h1>
+          </div>
+        </div>
+        {farmError && <p className="auth-status error" role="alert">{farmError}</p>}
+        {organizationFarms.length === 0 ? (
+          <p className="table-empty">No farm has been assigned to your account.</p>
+        ) : (
+          <div className="content-grid two">
+            {organizationFarms.map((farm) => (
+              <Card key={farm.id}>
+                <h2 className="panel-title">{farm.name}</h2>
+                <p className="panel-subtitle">{farm.location || farm.address || 'Location not provided'}</p>
+                <p>{farm.area ?? 'Area not provided'} {farm.areaUnit ?? ''}</p>
+                {farm.description && <p>{farm.description}</p>}
+                <p><strong>Assigned field / work location:</strong> {currentUser.assignedFields.join(', ') || 'Not specified'}</p>
+              </Card>
+            ))}
+          </div>
+        )}
+      </>
+    )
+  }
+
   return (
     <>
       <div className="page-heading-row">
@@ -107,10 +182,36 @@ function FarmManagementPage() {
           <h1 className="page-title">Your farm, at a glance</h1>
           <p className="page-description">Manage the farm profile, fields, people, work, and operating costs.</p>
         </div>
-        <Button onClick={() => setModalOpen(true)}>
-          <Plus aria-hidden="true" size={15} /> Register field
-        </Button>
+        <span className="content-grid two">
+          {currentUser?.role === 'FARM_OWNER' && (
+            <Button onClick={() => setFarmModalOpen(true)} type="button">
+              <Plus aria-hidden="true" size={15} /> Add farm
+            </Button>
+          )}
+          <Button onClick={() => setModalOpen(true)} type="button">
+            <Plus aria-hidden="true" size={15} /> Register field
+          </Button>
+        </span>
       </div>
+      {farmError && <p className="auth-status error" role="alert">{farmError}</p>}
+      {farmNotice && <p className="auth-status success" role="status">{farmNotice}</p>}
+      <div className="section-heading">
+        <div><h2>Organization farms</h2><p>Saved farms available to your role</p></div>
+      </div>
+      {organizationFarms.length === 0 ? (
+        <Card><p className="table-empty">No farms are assigned to your account yet.</p></Card>
+      ) : (
+        <div className="content-grid three">
+          {organizationFarms.map((farm) => (
+            <Card key={farm.id}>
+              <h3 className="panel-title">{farm.name}</h3>
+              <p className="panel-subtitle">{farm.location || farm.address || 'Location not provided'}</p>
+              <p>{farm.area ?? 'Area not provided'} {farm.areaUnit ?? ''}</p>
+              {farm.description && <p>{farm.description}</p>}
+            </Card>
+          ))}
+        </div>
+      )}
       <div className="notice">
         <Wheat aria-hidden="true" size={15} />
         <span>Sample farm and staff records. New fields are held in shared in-memory state and will not persist after reload.</span>
@@ -186,6 +287,32 @@ function FarmManagementPage() {
           <div className="form-actions">
             <Button onClick={() => setModalOpen(false)} variant="secondary">Cancel</Button>
             <Button type="submit">Add field</Button>
+          </div>
+        </form>
+      </Modal>
+      <Modal description="Save a farm to your organization." onClose={() => setFarmModalOpen(false)} open={farmModalOpen} title="Add a farm">
+        <form className="fv-fields-stack" onSubmit={(event) => void addOrganizationFarm(event)}>
+          <Input autoFocus label="Farm name" name="name" required />
+          <Input label="Location" name="location" required />
+          <Input label="Address" name="address" required />
+          <div className="content-grid two">
+            <Input label="Farm area" min="0.01" name="area" required step="any" type="number" />
+            <label className="field">
+              <span className="field-label">Area unit</span>
+              <select className="field-control" defaultValue="acre" name="areaUnit">
+                <option value="acre">Acre</option>
+                <option value="hectare">Hectare</option>
+              </select>
+            </label>
+          </div>
+          <label className="field">
+            <span className="field-label">Description</span>
+            <textarea className="field-control" name="description" rows={3} />
+          </label>
+          {farmError && <p className="form-error" role="alert">{farmError}</p>}
+          <div className="form-actions">
+            <Button onClick={() => setFarmModalOpen(false)} type="button" variant="secondary">Cancel</Button>
+            <Button type="submit">Save farm</Button>
           </div>
         </form>
       </Modal>

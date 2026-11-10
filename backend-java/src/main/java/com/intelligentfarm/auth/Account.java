@@ -11,6 +11,11 @@ public final class Account {
     private final String email;
     private final String passwordHash;
     private final long authVersion;
+    private final String fullName;
+    private final String mobileNumber;
+    private final FarmRole role;
+    private final AccountStatus status;
+    private final Instant emailVerifiedAt;
     private final Instant createdAt;
     private final Instant updatedAt;
 
@@ -19,6 +24,11 @@ public final class Account {
             String email,
             String passwordHash,
             long authVersion,
+            String fullName,
+            String mobileNumber,
+            FarmRole role,
+            AccountStatus status,
+            Instant emailVerifiedAt,
             Instant createdAt,
             Instant updatedAt) {
         this.id = Objects.requireNonNull(id, "id");
@@ -28,12 +38,53 @@ public final class Account {
             throw new IllegalArgumentException("authVersion must be non-negative");
         }
         this.authVersion = authVersion;
+        this.fullName = normalizeOptional(fullName, 255, "fullName");
+        this.mobileNumber = normalizeOptional(mobileNumber, 64, "mobileNumber");
+        this.role = role;
+        this.status = Objects.requireNonNull(status, "status");
+        this.emailVerifiedAt = emailVerifiedAt;
         this.createdAt = Objects.requireNonNull(createdAt, "createdAt");
         this.updatedAt = Objects.requireNonNull(updatedAt, "updatedAt");
+        if (status == AccountStatus.ACTIVE && (role == null || emailVerifiedAt == null)) {
+            throw new IllegalArgumentException("active accounts require a role and verified email");
+        }
     }
 
-    public static Account create(String email, String passwordHash, Instant now) {
-        return new Account(UUID.randomUUID(), email, passwordHash, 0, now, now);
+    public static Account createPendingOwner(
+            String email, String passwordHash, String fullName, String mobileNumber, Instant now) {
+        return new Account(
+                UUID.randomUUID(),
+                email,
+                passwordHash,
+                0,
+                fullName,
+                mobileNumber,
+                FarmRole.FARM_OWNER,
+                AccountStatus.PENDING_VERIFICATION,
+                null,
+                now,
+                now);
+    }
+
+    public static Account createVerifiedMember(
+            String email,
+            String passwordHash,
+            String fullName,
+            String mobileNumber,
+            FarmRole role,
+            Instant now) {
+        return new Account(
+                UUID.randomUUID(),
+                email,
+                passwordHash,
+                0,
+                fullName,
+                mobileNumber,
+                Objects.requireNonNull(role, "role"),
+                AccountStatus.ACTIVE,
+                now,
+                now,
+                now);
     }
 
     public static String normalizeEmail(String email) {
@@ -44,6 +95,20 @@ public final class Account {
             throw new IllegalArgumentException("email must contain between 1 and 254 characters");
         }
         return normalizedEmail;
+    }
+
+    private static String normalizeOptional(String value, int maxLength, String name) {
+        if (value == null) {
+            return null;
+        }
+        String normalized = value.trim();
+        if (normalized.isEmpty()) {
+            return null;
+        }
+        if (normalized.length() > maxLength) {
+            throw new IllegalArgumentException(name + " is too long");
+        }
+        return normalized;
     }
 
     private static String requirePasswordHash(String passwordHash) {
@@ -69,6 +134,34 @@ public final class Account {
 
     public long getAuthVersion() {
         return authVersion;
+    }
+
+    public String getFullName() {
+        return fullName;
+    }
+
+    public String getMobileNumber() {
+        return mobileNumber;
+    }
+
+    public FarmRole getRole() {
+        return role;
+    }
+
+    public AccountStatus getStatus() {
+        return status;
+    }
+
+    public Instant getEmailVerifiedAt() {
+        return emailVerifiedAt;
+    }
+
+    public boolean isEmailVerified() {
+        return emailVerifiedAt != null || status == AccountStatus.ACTIVE;
+    }
+
+    public boolean isEligibleForAuthentication() {
+        return status == AccountStatus.ACTIVE && role != null && emailVerifiedAt != null;
     }
 
     public Instant getCreatedAt() {

@@ -21,12 +21,12 @@ public class CsrfProtectionFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        String path = request.getServletPath();
-        boolean authMutation = "POST".equalsIgnoreCase(request.getMethod())
-                && ("/api/auth/register".equals(path)
-                        || "/api/auth/login".equals(path)
-                        || "/api/auth/logout".equals(path));
-        return !authMutation;
+        String method = request.getMethod();
+        return !request.getServletPath().startsWith("/api/")
+                || "GET".equalsIgnoreCase(method)
+                || "HEAD".equalsIgnoreCase(method)
+                || "OPTIONS".equalsIgnoreCase(method)
+                || "TRACE".equalsIgnoreCase(method);
     }
 
     @Override
@@ -48,6 +48,7 @@ public class CsrfProtectionFilter extends OncePerRequestFilter {
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
             response.setContentType("application/json");
             response.getWriter().write("{\"code\":\"csrf_invalid\",\"message\":\"A valid CSRF token is required.\"}");
+            response.getWriter().flush();
             return;
         }
         filterChain.doFilter(request, response);

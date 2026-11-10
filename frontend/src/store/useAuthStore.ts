@@ -79,14 +79,17 @@ export const authStore = {
           })
           return false
         }
-      } catch {
+      } catch (err: unknown) {
+        const errorMessage = err instanceof Error && err.message
+          ? err.message
+          : 'Unable to connect to the authentication service.'
         setState({
           user: null,
           isAuthenticated: false,
           isInitialized: true,
-          status: 'unauthenticated',
+          status: 'error',
           isLoading: false,
-          error: null,
+          error: errorMessage,
         })
         return false
       } finally {
@@ -111,8 +114,8 @@ export const authStore = {
         error: null,
       })
       return user
-    } catch (err: any) {
-      const errorMsg = err?.message || 'Login failed'
+    } catch (err: unknown) {
+      const errorMsg = err instanceof Error && err.message ? err.message : 'Login failed'
       setState({
         error: errorMsg,
         isLoading: false,
@@ -147,10 +150,14 @@ export const authStore = {
           isLoading: false,
           error: null,
         })
-        return { user: null, requiresLogin: true }
+        return {
+          user: null,
+          requiresLogin: true,
+          verificationMode: response.verificationMode,
+        }
       }
-    } catch (err: any) {
-      const errorMsg = err?.message || 'Registration failed'
+    } catch (err: unknown) {
+      const errorMsg = err instanceof Error && err.message ? err.message : 'Registration failed'
       setState({
         error: errorMsg,
         isLoading: false,
