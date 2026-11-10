@@ -33,9 +33,9 @@ function FarmManagementPage() {
 
   // Admin sees every farm, a farmer their own, a field worker the farms they are assigned to.
   const load = useCallback(
-    (signal: AbortSignal) =>
-      farmApi.listFarms(role === 'admin' ? {} : role === 'farmer' ? { ownerId: userId } : { workerId: userId }, signal),
-    [role, userId],
+    // The API returns only the farms the signed-in user may access (owned or assigned).
+    (signal: AbortSignal) => farmApi.listFarms({}, signal),
+    [],
   )
   const { data: farms, error, loading, reload } = useRemote(load)
 

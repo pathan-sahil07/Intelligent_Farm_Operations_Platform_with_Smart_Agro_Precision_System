@@ -1,7 +1,7 @@
-import type { Role } from './SessionContext'
+import type { Role } from './session.context'
 
 export const ROLE_LABELS: Record<Role, string> = {
   admin: 'Administrator',
-  farmer: 'Farmer',
-  worker: 'Field worker',
+  farmer: 'Farm owner / manager',
+  worker: 'Field staff',
 }
