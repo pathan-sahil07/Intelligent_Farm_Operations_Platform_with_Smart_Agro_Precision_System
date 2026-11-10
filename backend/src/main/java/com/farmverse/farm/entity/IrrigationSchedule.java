@@ -20,6 +20,13 @@ public class IrrigationSchedule {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "farm_id")
+    @JsonProperty("farm_id")
+    private Long farmId;
+    @Column(name = "plot_id")
+    @JsonProperty("plot_id")
+    private Long plotId;
+
     @ManyToOne(optional = false) @JoinColumn(name = "crop_id")
     @JsonIgnore
     private Crop crop;

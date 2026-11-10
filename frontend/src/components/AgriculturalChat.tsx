@@ -1,14 +1,12 @@
 import { useState, type FormEvent } from 'react'
+import { assistantApi } from '@/api/endpoints'
+import { errorMessage } from '@/lib/axios'
 
 type Message = {
   role: 'assistant' | 'user'
   text: string
   sources?: string[]
 }
-
-const API_URL = (
-  import.meta.env.VITE_CHATBOT_API_URL || 'http://127.0.0.1:8000'
-).replace(/\/$/, '')
 
 const suggestions = [
   'How can farmers improve soil health?',
@@ -38,21 +36,7 @@ export default function AgriculturalChat() {
     setError('')
 
     try {
-      const response = await fetch(`${API_URL}/chat`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question: text }),
-      })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(
-          typeof data.detail === 'string'
-            ? data.detail
-            : `Chat request failed (${response.status}).`,
-        )
-      }
+      const data = (await assistantApi.chat({ question: text })) as { answer?: string; sources?: string[] }
 
       setMessages(current => [
         ...current,
@@ -63,11 +47,7 @@ export default function AgriculturalChat() {
         },
       ])
     } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : 'Could not connect to the AI Farm Assistant.',
-      )
+      setError(errorMessage(err))
     } finally {
       setSending(false)
     }

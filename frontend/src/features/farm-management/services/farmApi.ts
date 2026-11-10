@@ -10,13 +10,15 @@ import type {
   SoilTest,
   SoilTestInput,
 } from '../types/farm-management.types'
+import { clearToken, getToken } from '@/lib/axios'
 
 /**
  * In development the Vite dev server proxies these paths to the Spring Boot app
  * (see vite.config.ts), so the default base is the same origin. For a deployed build
  * set VITE_FARM_API_URL, e.g. https://farm.example.com/api
  */
-const API_BASE = (import.meta.env.VITE_FARM_API_URL as string | undefined)?.replace(/\/+$/, '') ?? '/api'
+import { API_URL } from '@/config/env'
+const API_BASE = API_URL
 
 /** Error thrown for every failed call. `fieldErrors` is filled for 400 validation responses. */
 export class ApiError extends Error {
@@ -41,12 +43,19 @@ const NETWORK_MESSAGE = 'Cannot reach the farm service. Check that the backend i
 async function send(path: string, init: RequestInit = {}): Promise<Response> {
   let response: Response
   try {
-    response = await fetch(`${API_BASE}${path}`, init)
+    const token = getToken()
+    const headers = new Headers(init.headers)
+    if (token) headers.set('Authorization', `Bearer ${token}`)
+    response = await fetch(`${API_BASE}${path}`, { ...init, headers })
   } catch (error) {
     if (error instanceof DOMException && error.name === 'AbortError') throw error
     throw new ApiError(0, NETWORK_MESSAGE)
   }
   if (response.ok) return response
+  if (response.status === 401) {
+    clearToken()
+    if (window.location.pathname !== '/login') window.location.assign('/login')
+  }
 
   // GlobalExceptionHandler returns { timestamp, status, error, message }.
   // `message` is a string, or a { field: message } map for bean-validation failures.

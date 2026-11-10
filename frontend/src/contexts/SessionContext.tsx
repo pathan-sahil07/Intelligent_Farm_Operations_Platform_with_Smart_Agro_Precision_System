@@ -1,12 +1,16 @@
-import type { ReactNode } from 'react'
+import { useMemo, type ReactNode } from 'react'
+import { toSessionRole } from '@/config/permissions'
+import { useAuth } from './useAuth'
 import { SessionContext } from './session.context'
 
-export type Role = 'admin' | 'farmer' | 'worker'
-export interface Session {
-  role: Role
-  userId: number
-}
+export type { Role, Session } from './session.context'
 
+/** Exposes the signed-in user to the farm-management screens as { role, userId }. */
 export function SessionProvider({ children }: { children: ReactNode }) {
-  return <SessionContext.Provider value={{ session: { role: 'farmer', userId: 1 } }}>{children}</SessionContext.Provider>
+  const { user } = useAuth()
+  const value = useMemo(
+    () => ({ session: { role: toSessionRole(user?.role), userId: user?.id ?? 0 } }),
+    [user],
+  )
+  return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>
 }

@@ -17,6 +17,9 @@ import java.time.LocalDateTime;
 public class HarvestRecord {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Column(name = "farm_id")
+    @JsonProperty("farm_id")
+    private Long farmId;
     @ManyToOne @JoinColumn(name = "crop_id")
     private Crop crop;
     @Column(name = "crop_name")

@@ -126,25 +126,6 @@ function FarmDetailPage() {
   const { summary, documents } = data
   const { farm } = summary
 
-  // The API does not enforce access yet, so mirror the intended rules in the screen.
-  const accessProblem =
-    session.role === 'farmer' && farm.ownerId !== session.userId
-      ? `This farm belongs to ${userLabel(farm.ownerId)}. Switch to its owner or to an admin to open it.`
-      : session.role === 'worker' && !summary.assignedWorkerIds.includes(session.userId)
-        ? `You are not assigned to this farm. Ask an admin or the owner to assign ${userLabel(session.userId)}.`
-        : null
-
-  if (accessProblem) {
-    return (
-      <>
-        {backLink}
-        <Card className="state-card">
-          <h1 className="page-title">You cannot open this farm</h1>
-          <p className="page-description">{accessProblem}</p>
-        </Card>
-      </>
-    )
-  }
 
   const plots = [...summary.plots].sort((a, b) => a.plot.id - b.plot.id)
   const hasCoordinates = farm.latitude !== null && farm.longitude !== null

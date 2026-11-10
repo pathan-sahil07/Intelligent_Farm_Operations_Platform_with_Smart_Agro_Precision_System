@@ -40,7 +40,8 @@ app.add_middleware(
 DOCUMENT_PATH = BASE_DIR / "documents" / "agriculture.txt"
 # Model names can change depending on availability and account access.
 EMBEDDING_MODEL = "gemini-embedding-001"
-CHAT_MODEL = "gemini-3.1-flash-lite"
+CHAT_MODEL = os.getenv("GEMINI_CHAT_MODEL", "gemini-3.1-flash-lite")
+FALLBACK_CHAT_MODELS = ["gemini-2.5-flash", "gemini-2.0-flash"]
 
 
 def load_documents():
@@ -151,17 +152,25 @@ def chat(request: ChatRequest):
         context = "\n\n".join(sources)
 
         if client:
-            response = client.models.generate_content(
-                model=CHAT_MODEL,
-                contents=(
-                    "You are an agricultural assistant. Answer using the "
-                    "provided agricultural context. If the context does not "
-                    "contain enough information, say so. Do not invent facts. "
-                    "Use simple language.\n\n"
-                    f"Agricultural context:\n{context}\n\n"
-                    f"Farmer's question: {question}"
-                ),
+            prompt = (
+                "You are an agricultural assistant. Answer using the "
+                "provided agricultural context. If the context does not "
+                "contain enough information, say so. Do not invent facts. "
+                "Use simple language.\n\n"
+                f"Agricultural context:\n{context}\n\n"
+                f"Farmer's question: {question}"
             )
+            response = None
+            last_error = None
+            for model_name in [CHAT_MODEL, *FALLBACK_CHAT_MODELS]:
+                try:
+                    response = client.models.generate_content(model=model_name, contents=prompt)
+                    break
+                except Exception as model_error:
+                    last_error = model_error
+                    print(f"ERROR: model {model_name} failed: {model_error}", flush=True)
+            if response is None:
+                raise last_error
             answer = response.text or "I couldn't generate an answer."
         else:
             answer = (
@@ -176,7 +185,8 @@ def chat(request: ChatRequest):
             sources=sources,
         )
 
-    except Exception:
+    except Exception as error:
+        print(f"ERROR: chat failed: {error!r}", flush=True)
         raise HTTPException(
             status_code=502,
             detail="The agricultural assistant could not complete the request.",

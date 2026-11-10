@@ -2,12 +2,13 @@ package com.farmverse.farm.controller;
 
 import com.farmverse.farm.entity.Equipment;
 import com.farmverse.farm.entity.EquipmentMaintenance;
-import com.farmverse.farm.exception.ResourceNotFoundException;
-import com.farmverse.farm.repository.EquipmentMaintenanceRepository;
-import com.farmverse.farm.repository.EquipmentRepository;
+import com.farmverse.farm.service.EquipmentService;
+import com.farmverse.farm.service.EquipmentService.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,34 +17,77 @@ import java.util.List;
 @RequestMapping("/api/equipment")
 @RequiredArgsConstructor
 public class EquipmentController {
-    private final EquipmentRepository equipment;
-    private final EquipmentMaintenanceRepository maintenance;
+    private final EquipmentService service;
 
     @GetMapping
-    public List<Equipment> list(@RequestParam(required = false) Long farmId) {
-        return farmId == null ? equipment.findAll() : equipment.findByFarmIdOrderByNameAsc(farmId);
+    @PreAuthorize("hasAuthority('EQUIPMENT_READ')")
+    public List<Equipment> list(@RequestParam(required = false) Long farmId,
+                                @RequestParam(required = false) String status,
+                                @RequestParam(required = false) String category) {
+        return service.list(farmId, status, category);
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("hasAuthority('EQUIPMENT_WRITE')")
     public Equipment create(@Valid @RequestBody Equipment item) {
-        item.setId(null);
-        return equipment.save(item);
+        return service.create(item);
+    }
+
+    @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('EQUIPMENT_WRITE')")
+    public Equipment update(@PathVariable Long id, @Valid @RequestBody Equipment item) {
+        return service.update(id, item);
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('EQUIPMENT_WRITE')")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        service.delete(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{id}/allocate")
+    @PreAuthorize("hasAuthority('EQUIPMENT_WRITE')")
+    public Equipment allocate(@PathVariable Long id, @RequestBody AllocateRequest request) {
+        return service.allocate(id, request);
+    }
+
+    @PostMapping("/{id}/release")
+    @PreAuthorize("hasAuthority('EQUIPMENT_WRITE')")
+    public Equipment release(@PathVariable Long id) {
+        return service.release(id);
+    }
+
+    @PostMapping("/{id}/hours")
+    @PreAuthorize("hasAuthority('EQUIPMENT_WRITE')")
+    public Equipment hours(@PathVariable Long id, @Valid @RequestBody HoursRequest request) {
+        return service.logHours(id, request);
+    }
+
+    @GetMapping("/{id}/maintenance")
+    @PreAuthorize("hasAuthority('EQUIPMENT_READ')")
+    public List<EquipmentMaintenance> history(@PathVariable Long id) {
+        return service.history(id);
     }
 
     @PostMapping("/{id}/maintenance")
     @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("hasAuthority('EQUIPMENT_WRITE')")
     public EquipmentMaintenance schedule(@PathVariable Long id, @Valid @RequestBody EquipmentMaintenance record) {
-        Equipment item = equipment.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Equipment not found"));
-        record.setId(null);
-        record.setEquipment(item);
-        return maintenance.save(record);
+        return service.scheduleMaintenance(id, record);
     }
 
-    @GetMapping("/{id}/maintenance")
-    public List<EquipmentMaintenance> history(@PathVariable Long id) {
-        if (!equipment.existsById(id)) throw new ResourceNotFoundException("Equipment not found");
-        return maintenance.findByEquipmentIdOrderByScheduledDateDesc(id);
+    @PatchMapping("/maintenance/{maintenanceId}/complete")
+    @PreAuthorize("hasAuthority('EQUIPMENT_WRITE')")
+    public EquipmentMaintenance complete(@PathVariable Long maintenanceId, @Valid @RequestBody CompleteRequest request) {
+        return service.completeMaintenance(maintenanceId, request);
+    }
+
+    @GetMapping("/maintenance/due")
+    @PreAuthorize("hasAuthority('EQUIPMENT_READ')")
+    public List<EquipmentMaintenance> due(@RequestParam(required = false) Long farmId,
+                                          @RequestParam(defaultValue = "14") int days) {
+        return service.due(farmId, days);
     }
 }

@@ -1,71 +1,47 @@
-# Intelligent_Farm_Operations_Platform_with_Smart_Agro_Precision_System
-Intelligent Farm Operations Platform with Smart Agro Precision System
-
-## Architecture
-
-React/TypeScript/Vite is backed by a modular Spring Boot monolith. PostgreSQL
-stores farm, crop, irrigation, harvest, plot, worker, soil-test, and
-land-document data. The Gemini/RAG assistant remains an isolated Python
-service under `backend/models/aimodel`.
-
-## Run locally
-
-1. Create a PostgreSQL database and copy `backend/.env.example` to
-   `backend/.env`, replacing placeholder credentials.
-2. Start the API with `cd backend && mvn spring-boot:run`.
-3. Start the UI with `cd frontend && npm install && npm run dev`.
-
-Vite proxies `/api` to Spring Boot on port 8080. The main REST modules are
-`/api/farms`, `/api/crops`, `/api/irrigation`, and `/api/harvests`; farm assets
-are available under the nested farm routes documented in `backend/README.md`.
-
-## Verification
-
-```sh
-cd backend && mvn clean test && mvn package
-cd frontend && npm run build
-```
-
-Set `DOCUMENTS_DIRECTORY` to a writable directory for land-document uploads.
-Never put Gemini credentials in frontend code.
 # Intelligent Farm Operations Platform
 
-The platform is a React/Vite frontend, Java 21/Spring Boot business API, PostgreSQL/PostGIS database, and optional Python/Gemini RAG assistant.
+React + TypeScript frontend, Spring Boot 3 (Java 21) API, PostgreSQL/PostGIS, and an optional Python/Gemini assistant.
 
-## Run locally
+**Modules:** Farm management · Crop lifecycle · Irrigation · Resource planning · Inventory · Equipment · Weather · GIS (Leaflet + PostGIS) · Analytics with CSV export · Notifications · Audit log · Users, roles and permissions.
 
-1. Copy `.env.example` to `.env` and set `GEMINI_API_KEY` when using the assistant.
-2. Start PostgreSQL/PostGIS with `docker compose up database -d`.
-3. Build and start the API with `cd backend && mvn spring-boot:run`.
-4. Start the frontend with `cd frontend && npm install && npm run dev`.
-5. Open the Vite URL (normally `http://localhost:5173`).
+## Security model
 
-For the complete container stack:
+- JWT login (BCrypt passwords). Roles: `ADMIN`, `FARM_OWNER`, `FARM_MANAGER`, `AGRONOMIST`, `FIELD_WORKER`.
+- Permissions are loaded from the database on each request and enforced with `@PreAuthorize`. Admins can edit them under *Roles & permissions*.
+- Farm-level isolation: non-admins only see farms they own or are assigned to. Legacy rows with no farm are admin-only.
+- Self-registration only creates `FARM_OWNER` or `FIELD_WORKER`. The first admin comes from `ADMIN_EMAIL` / `ADMIN_PASSWORD`.
+- The app refuses to start without a `JWT_SECRET` of 32+ characters (outside the demo/test profiles).
 
-```bash
-mvn -f backend/pom.xml package -DskipTests
+## Run with Docker
+
+```sh
+cp .env.example .env     # set POSTGRES_PASSWORD, JWT_SECRET, ADMIN_EMAIL, ADMIN_PASSWORD
 docker compose up --build
 ```
 
-The API is available at `http://localhost:8080`, Swagger UI at `/api/swagger-ui`, health at `/actuator/health`, and the frontend at `http://localhost:5173`.
+UI: http://localhost:5173 · API: http://localhost:8080 · Swagger: http://localhost:8080/api/swagger-ui
 
-Flyway owns schema creation. The PostGIS image is required because migration `V3__postgis_and_operational_modules.sql` creates the spatial extension and indexes. Hibernate runs in `validate` mode and never recreates production tables.
+## Run for development
 
-## Implemented API areas
-
-Existing farm, crop, irrigation, harvest, plot, worker, soil-test, and document APIs remain under `/api`. Operational APIs are available under `/api/inventory`, `/api/equipment`, `/api/resources`, `/api/weather`, `/api/gis`, and `/api/analytics/overview`.
-
-The Gemini assistant remains an independent FastAPI service under `backend/models/aimodel`; its credentials are server-side and its `/chat` response includes retrieved source chunks.
-
-If PostgreSQL is not installed locally, use the isolated in-memory demo profile:
-
-```bash
-cd backend
-mvn spring-boot:run -Dspring-boot.run.profiles=demo
+```sh
+docker compose up database -d
+cd backend && cp .env.example .env   # then export its values, or set them in your IDE
+mvn spring-boot:run
+cd frontend && npm install && npm run dev   # proxies /api to localhost:8080
 ```
 
-The demo profile is for local UI/API development only. Production and Docker use PostgreSQL/PostGIS with Flyway.
+## Tests
 
-## Configuration
+```sh
+cd backend && mvn clean verify     # unit tests (Mockito)
+cd frontend && npm run lint && npm run build && npm test
+```
 
-`DATABASE_URL`, `DATABASE_USERNAME`, `DATABASE_PASSWORD`, `DOCUMENTS_DIRECTORY`, `WEATHER_PROVIDER_URL`, and `GEMINI_API_KEY` are environment variables. Never commit real values.
+## Documentation
+
+- [docs/API_CONTRACT.md](docs/API_CONTRACT.md): endpoints, roles and the permission matrix
+- [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md): environment variables, weather rules, production notes
+- [docs/TESTING_REPORT.md](docs/TESTING_REPORT.md): what was run, what was not, known limitations
+- [AUDIT.md](AUDIT.md): the phase-1 audit of the original repository
+
+Never put credentials in frontend code or commit `.env` files.
