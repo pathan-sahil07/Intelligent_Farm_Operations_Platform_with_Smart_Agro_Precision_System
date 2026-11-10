@@ -145,7 +145,7 @@ public class EquipmentService {
     @Transactional(readOnly = true)
     public List<EquipmentMaintenance> history(Long id) {
         load(id);
-        return maintenance.findByEquipmentIdOrderByScheduledDateDesc(id);
+        return maintenance.findByEquipment_IdOrderByScheduledDateDesc(id);
     }
 
     @Transactional
@@ -183,7 +183,7 @@ public class EquipmentService {
     }
 
     private void refreshNextMaintenance(Equipment e) {
-        LocalDate next = maintenance.findByEquipmentIdAndCompletedDateIsNullOrderByScheduledDateAsc(e.getId()).stream()
+        LocalDate next = maintenance.findByEquipment_IdAndCompletedDateIsNullOrderByScheduledDateAsc(e.getId()).stream()
                 .map(EquipmentMaintenance::getScheduledDate).findFirst().orElse(null);
         e.setNextMaintenanceDate(next);
         equipment.save(e);

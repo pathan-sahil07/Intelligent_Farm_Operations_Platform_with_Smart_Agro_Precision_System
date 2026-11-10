@@ -147,7 +147,7 @@ public class InventoryService {
     @Transactional(readOnly = true)
     public List<InventoryTransaction> itemHistory(Long itemId) {
         load(itemId);
-        return transactions.findByInventoryItemIdOrderByCreatedAtDesc(itemId);
+        return transactions.findByInventoryItem_IdOrderByCreatedAtDesc(itemId);
     }
 
     @Transactional(readOnly = true)

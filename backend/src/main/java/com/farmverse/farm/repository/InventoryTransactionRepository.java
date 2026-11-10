@@ -12,7 +12,7 @@ import java.util.Collection;
 import java.util.List;
 
 public interface InventoryTransactionRepository extends JpaRepository<InventoryTransaction, Long> {
-    List<InventoryTransaction> findByInventoryItemIdOrderByCreatedAtDesc(Long inventoryItemId);
+    List<InventoryTransaction> findByInventoryItem_IdOrderByCreatedAtDesc(Long inventoryItemId);
 
     @Query("""
             select t from InventoryTransaction t

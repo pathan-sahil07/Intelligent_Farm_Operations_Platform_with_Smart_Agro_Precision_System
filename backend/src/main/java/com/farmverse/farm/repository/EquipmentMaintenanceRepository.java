@@ -10,9 +10,9 @@ import java.util.Collection;
 import java.util.List;
 
 public interface EquipmentMaintenanceRepository extends JpaRepository<EquipmentMaintenance, Long> {
-    List<EquipmentMaintenance> findByEquipmentIdOrderByScheduledDateDesc(Long equipmentId);
+    List<EquipmentMaintenance> findByEquipment_IdOrderByScheduledDateDesc(Long equipmentId);
 
-    List<EquipmentMaintenance> findByEquipmentIdAndCompletedDateIsNullOrderByScheduledDateAsc(Long equipmentId);
+    List<EquipmentMaintenance> findByEquipment_IdAndCompletedDateIsNullOrderByScheduledDateAsc(Long equipmentId);
 
     @Query("""
             select m from EquipmentMaintenance m
