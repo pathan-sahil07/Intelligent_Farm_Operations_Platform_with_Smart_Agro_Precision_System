@@ -289,3 +289,36 @@
 .farm-chat form .btn:disabled { opacity: .5; cursor: not-allowed; }
 .farm-chat-messages { max-height: 420px; overflow-y: auto; }
 .farm-chat-message.user { margin-left: auto; background: #e8f3ea; }
+
+/* ---- Page layout primitives used by the farm-management feature ---- */
+.page-heading-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.page-heading-row > div:first-child { min-width: 0; }
+.page-title { margin: 0; font-size: 1.75rem; line-height: 1.2; font-weight: 600; letter-spacing: -0.01em; color: #1d2b24; }
+.page-description { margin: 6px 0 0; max-width: 42rem; font-size: 14px; color: #6b7a70; }
+.page-heading-row .eyebrow { margin-bottom: 6px; }
+.inline-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.content-grid { display: grid; gap: 20px; grid-template-columns: 1fr; }
+@media (min-width: 640px) { .content-grid.two, .content-grid.four { grid-template-columns: repeat(2, 1fr); } .content-grid.three { grid-template-columns: repeat(3, 1fr); } }
+@media (min-width: 1024px) { .content-grid.four { grid-template-columns: repeat(4, 1fr); } }
+.content-grid[style] { margin-top: 0 !important; }
+.section-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-top: 12px; }
+.section-heading h2 { margin: 0; font-size: 1.125rem; font-weight: 600; }
+.section-heading p { margin: 4px 0 0; font-size: 13px; color: #6b7a70; }
+.stat-card { padding: 20px 22px; display: flex; flex-direction: column; gap: 4px; }
+.stat-label { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #7b8a80; }
+.stat-value { margin: 6px 0 2px; font-size: 1.5rem; font-weight: 600; letter-spacing: -0.01em; color: #1d2b24; }
+.stat-note { font-size: 13px; color: #6b7a70; }
+.notice { align-items: center; gap: 10px; justify-content: flex-start; margin-bottom: 0; padding: 12px 16px; font-size: 13px; }
+.notice.warning { background: #fbf1dd; color: #8a5a12; border-color: #f0dcb0; }
+.table-primary { display: block; font-weight: 500; color: #1d2b24; }
+.table-secondary { display: block; font-size: 12px; color: #7b8a80; margin-top: 2px; }
+.muted { color: #8a978e; }
+.form-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; }
+.form-error { color: #b42318; font-size: 13px; margin: 8px 0 0; }
+.back-link { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 500; color: #2f7b45; text-decoration: none; }
+.back-link:hover { text-decoration: underline; }
+.farm-meta { margin: 0; font-size: 13px; color: #6b7a70; }
+.list-search { margin: 0; }
+/* tables: comfortable cell padding */
+table th { padding: 12px 20px; }
+table td { padding: 16px 20px; }

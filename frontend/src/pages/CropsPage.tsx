@@ -107,7 +107,7 @@ export default function CropsPage() {
 
       {selected && <CropDetails crop={selected} canWrite={canWrite} onClose={() => setSelected(null)} />}
 
-      <Panel title="Harvest history" className="mt-5">
+      <Panel title="Harvest history" >
         <DataTable
           caption="Harvest records"
           columns={[
@@ -172,14 +172,14 @@ function CropDetails({ crop, canWrite, onClose }: { crop: Crop; canWrite: boolea
   const itemOptions = (items.data ?? []).filter((i) => ['FERTILIZER', 'PESTICIDE'].includes(i.category)).map((i) => ({ value: String(i.id), label: `${i.name} (${formatNumber(i.quantity)} ${i.unit} in stock)` }))
 
   return (
-    <Panel title={`${crop.name}: health & inputs`} className="mt-5" actions={<Button size="sm" variant="ghost" onClick={onClose}>Close</Button>}>
+    <Panel title={`${crop.name}: health & inputs`}  actions={<Button size="sm" variant="ghost" onClick={onClose}>Close</Button>}>
       <Tabs defaultValue="health">
         <TabsList>
           <TabsTrigger value="health">Health records</TabsTrigger>
           <TabsTrigger value="activities">Fertilizer & pesticide</TabsTrigger>
         </TabsList>
         <TabsContent value="health">
-          {canWrite && <div className="mb-3"><Button size="sm" onClick={() => setAdding('health')}>Add health record</Button></div>}
+          {canWrite && <div className="pb-1"><Button size="sm" onClick={() => setAdding('health')}>Add health record</Button></div>}
           <DataTable caption="Health records" rows={health.data} loading={health.isLoading} error={health.error} getKey={(r) => r.id} emptyTitle="No health records"
             columns={[
               { key: 'd', header: 'Date', cell: (r) => formatDate(r.recordDate) },
@@ -189,7 +189,7 @@ function CropDetails({ crop, canWrite, onClose }: { crop: Crop; canWrite: boolea
             ]} />
         </TabsContent>
         <TabsContent value="activities">
-          {canWrite && <div className="mb-3"><Button size="sm" onClick={() => setAdding('activity')}>Record application</Button></div>}
+          {canWrite && <div className="pb-1"><Button size="sm" onClick={() => setAdding('activity')}>Record application</Button></div>}
           <DataTable caption="Fertilizer and pesticide applications" rows={activities.data} loading={activities.isLoading} error={activities.error} getKey={(r) => r.id} emptyTitle="No applications recorded"
             columns={[
               { key: 'd', header: 'Date', cell: (r) => formatDate(r.activityDate) },

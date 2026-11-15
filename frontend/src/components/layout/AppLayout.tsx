@@ -2,7 +2,7 @@ import { Suspense, useState } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import {
-  BarChart3, Bell, Bot, CloudSun, Cog, Droplets, History, LayoutDashboard, LogOut, Map as MapIcon, Menu, Package,
+  BarChart3, Bell, Bot, CloudSun, Droplets, History, LayoutDashboard, LogOut, Map as MapIcon, Menu, Package,
   Shield, Sprout, Tractor, Users, UserCircle, Wheat, Warehouse, X, type LucideIcon,
 } from 'lucide-react'
 import { notificationApi } from '@/api/endpoints'
@@ -10,7 +10,7 @@ import { Loading } from '@/components/common/StateViews'
 import type { Permission } from '@/config/permissions'
 import { ROLE_LABELS_BY_NAME, isRoleName } from '@/config/permissions'
 import { useAuth } from '@/contexts/useAuth'
-import { useFarm } from '@/contexts/useFarm'
+import { FarmSwitcher } from './FarmSwitcher'
 
 interface NavItem {
   to: string
@@ -68,7 +68,6 @@ function NavGroup({ items, onNavigate }: { items: NavItem[]; onNavigate: () => v
 
 export function AppLayout() {
   const { user, logout, can } = useAuth()
-  const { farms, farmId, setFarmId } = useFarm()
   const navigate = useNavigate()
   const [open, setOpen] = useState(false)
   const close = () => setOpen(false)
@@ -105,30 +104,11 @@ export function AppLayout() {
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-20 flex flex-wrap items-center gap-3 border-b border-neutral-200 bg-white/95 px-4 py-2.5 backdrop-blur">
+        <header className="sticky top-0 z-20 flex flex-wrap items-center gap-3 border-b border-neutral-200 bg-white/95 px-4 py-3 backdrop-blur sm:px-8">
           <button className="rounded-md p-1.5 hover:bg-neutral-100 lg:hidden" onClick={() => setOpen(true)} aria-label="Open menu">
             <Menu size={20} />
           </button>
-          <div className="flex items-center gap-2">
-            <Cog size={16} className="text-neutral-400" aria-hidden="true" />
-            <label htmlFor="farm-select" className="sr-only">
-              Selected farm
-            </label>
-            <select
-              id="farm-select"
-              className="field-control max-w-56 !py-1.5"
-              value={farmId ?? ''}
-              onChange={(e) => setFarmId(Number(e.target.value))}
-              disabled={farms.length === 0}
-            >
-              {farms.length === 0 && <option value="">No farms available</option>}
-              {farms.map((f) => (
-                <option key={f.id} value={f.id}>
-                  {f.name}
-                </option>
-              ))}
-            </select>
-          </div>
+          <FarmSwitcher />
           <div className="ml-auto flex items-center gap-2">
             <button
               className="relative rounded-md p-2 hover:bg-neutral-100"
@@ -161,9 +141,11 @@ export function AppLayout() {
             </button>
           </div>
         </header>
-        <main className="mx-auto w-full max-w-7xl flex-1 p-4 sm:p-6">
+        <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-8 sm:py-8">
           <Suspense fallback={<Loading />}>
-            <Outlet />
+            <div className="flex flex-col gap-6">
+              <Outlet />
+            </div>
           </Suspense>
         </main>
       </div>

@@ -42,7 +42,7 @@ export default function EquipmentPage() {
         actions={canWrite && <Button onClick={() => setDlg({ kind: 'edit', row: null })}><Plus size={16} aria-hidden="true" /> Add equipment</Button>} />
 
       {due.data && due.data.length > 0 && (
-        <Panel title="Maintenance due in 14 days" className="mb-5">
+        <Panel title="Maintenance due in 14 days">
           <ul className="divide-y divide-neutral-100 text-sm">
             {due.data.map((m) => (
               <li key={m.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
@@ -85,7 +85,7 @@ export default function EquipmentPage() {
       </Panel>
 
       {dlg?.kind === 'history' && (
-        <Panel title={`Service history: ${dlg.row.name}`} className="mt-5" actions={<Button size="sm" variant="ghost" onClick={() => setDlg(null)}>Close</Button>}>
+        <Panel title={`Service history: ${dlg.row.name}`}  actions={<Button size="sm" variant="ghost" onClick={() => setDlg(null)}>Close</Button>}>
           <DataTable caption="Maintenance history" rows={hist.data} loading={hist.isLoading} error={hist.error} getKey={(m) => m.id} emptyTitle="No maintenance recorded"
             columns={[
               { key: 't', header: 'Type', cell: (m) => m.maintenanceType },

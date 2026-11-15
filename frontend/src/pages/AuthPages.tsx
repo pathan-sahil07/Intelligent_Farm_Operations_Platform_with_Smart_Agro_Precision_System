@@ -12,7 +12,7 @@ function AuthShell({ title, subtitle, children }: { title: string; subtitle: str
   return (
     <div className="grid min-h-svh place-items-center bg-gradient-to-br from-brand-50 to-soil-100 p-4">
       <div className="w-full max-w-md rounded-2xl border border-neutral-200 bg-white p-7 shadow-lg">
-        <div className="mb-5 flex items-center gap-2 text-brand-700">
+        <div className="flex items-center gap-2 text-brand-700">
           <Wheat aria-hidden="true" />
           <span className="font-semibold">Intelligent Farm Operations</span>
         </div>

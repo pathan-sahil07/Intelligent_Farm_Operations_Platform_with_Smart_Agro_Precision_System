@@ -91,7 +91,7 @@ export default function GisPage() {
     <>
       <PageHeader title="Map" description={`Farm locations and plot boundaries for ${farm?.name ?? 'your farm'}. Areas are calculated by PostGIS.`} />
       {canWrite && (
-        <Panel title="Plot boundary" className="mb-4">
+        <Panel title="Plot boundary">
           <div className="flex flex-wrap items-center gap-2 text-sm">
             <select aria-label="Plot to edit" className="field-control !w-auto !py-1.5" value={plotId} onChange={(e) => { setPlotId(e.target.value); reset() }}>
               <option value="">Select plot…</option>{(plots.data ?? []).map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}

@@ -40,7 +40,7 @@ export default function DashboardPage() {
         <ErrorState error={dashboard.error} onRetry={() => dashboard.refetch()} />
       ) : d ? (
         <>
-          <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
+          <div className="grid grid-cols-2 gap-5 lg:grid-cols-3">
             <StatCard label="Plots" value={d.plotCount} hint={`${formatNumber(d.plottedAcres)} of ${formatNumber(d.farm.totalAreaAcres)} acres mapped`} />
             <StatCard label="Active crops" value={d.activeCrops} />
             <StatCard label="Irrigation pending" value={d.pendingIrrigation} />
@@ -48,7 +48,7 @@ export default function DashboardPage() {
             <StatCard label="Low-stock items" value={d.lowStockItems} tone={d.lowStockItems ? 'warning' : 'default'} />
             <StatCard label="Maintenance due (14d)" value={d.equipmentDueMaintenance} tone={d.equipmentDueMaintenance ? 'warning' : 'default'} />
           </div>
-          <div className="mt-5 grid gap-4 lg:grid-cols-3">
+          <div className="grid gap-5 lg:grid-cols-3">
             <Panel title="Harvests in the next 14 days" className="lg:col-span-1">
               {d.upcomingHarvests.length === 0 ? (
                 <EmptyState title="No harvests due" description="Crops with an expected harvest date appear here." />

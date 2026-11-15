@@ -59,14 +59,14 @@ export default function AnalyticsPage() {
             <Button variant="secondary" onClick={exportCsv}>Export CSV</Button>
           </div>} />
       {overview.isLoading ? <Loading /> : overview.error ? <ErrorState error={overview.error} onRetry={() => overview.refetch()} /> : o && (
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+        <div className="grid grid-cols-2 gap-5 md:grid-cols-4">
           <StatCard label="Harvest (kg)" value={formatNumber(o.totalHarvestKg)} />
           <StatCard label="Water used (L)" value={formatNumber(o.totalWaterLiters)} />
           <StatCard label="Operational cost" value={formatMoney(o.operationalCost)} />
           <StatCard label="Low-stock items" value={o.lowStockCount} tone={o.lowStockCount ? 'warning' : 'default'} />
         </div>
       )}
-      <div className="mt-5 grid gap-4 lg:grid-cols-2">
+      <div className="grid gap-5 lg:grid-cols-2">
         <Panel title="Yield by crop (kg)"><Chart data={prod.data?.byCrop} x="crop" bars={[{ key: 'quantityKg', name: 'Yield (kg)', color: '#2f7d32' }]} empty="No harvests in this period" /></Panel>
         <Panel title="Yield by month (kg)">
           {prod.data?.byMonth.length ? (

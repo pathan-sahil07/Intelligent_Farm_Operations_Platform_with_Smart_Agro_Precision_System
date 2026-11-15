@@ -25,7 +25,7 @@ export default function WeatherPage() {
               <StatCard label="Rain now" value={`${formatNumber(w.current.precipitationMm)} mm`} />
             </div>
           )}
-          <Panel title="Alerts" className="mt-5">
+          <Panel title="Alerts" >
             {w.alerts.length === 0 ? <p className="text-sm text-neutral-600">No weather alerts for the coming days.</p> : (
               <ul className="space-y-2">
                 {w.alerts.map((a, i) => (
@@ -37,7 +37,7 @@ export default function WeatherPage() {
               </ul>
             )}
           </Panel>
-          <Panel title="Forecast" className="mt-5">
+          <Panel title="Forecast" >
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm">
                 <caption className="sr-only">Daily forecast</caption>
