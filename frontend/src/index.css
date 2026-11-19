@@ -1,4 +1,5 @@
 @import 'tailwindcss';
+@import './styles/theme-vars.css';
 @import './styles/legacy-ui.css';
 
 @theme {
@@ -9,6 +10,7 @@
   --color-brand-600: #2f7b45;
   --color-brand-700: #25623a;
   --color-brand-900: #163a23;
+  --color-surface: #ffffff;
   --color-soil-50: #f6f4ee;
   --color-soil-100: #ebe7da;
   --font-sans: system-ui, 'Segoe UI', Roboto, sans-serif;
@@ -23,7 +25,60 @@
   --accent-bg: rgba(47, 123, 69, 0.1);
   --accent-border: rgba(47, 123, 69, 0.5);
   --shadow: rgba(0, 0, 0, 0.08) 0 8px 14px -4px, rgba(0, 0, 0, 0.04) 0 3px 5px -2px;
+  --sidebar: #163a23;
+  --sidebar-text: #dcefdf;
+  --sidebar-muted: #bbdfc1;
+  --sidebar-hover: #25623a;
   color-scheme: light;
+}
+
+/* Dark theme: the same Tailwind colour tokens, re-pointed so every utility follows. */
+:root[data-theme='dark'] {
+  --text: #b9c6bd;
+  --text-h: #f1f5f2;
+  --bg: #0d1310;
+  --border: #2b372f;
+  --accent: #4fb36d;
+  --accent-bg: rgba(79, 179, 109, 0.14);
+  --accent-border: rgba(79, 179, 109, 0.5);
+  --shadow: rgba(0, 0, 0, 0.5) 0 8px 14px -4px, rgba(0, 0, 0, 0.3) 0 3px 5px -2px;
+  --sidebar: #08100b;
+  --sidebar-text: #cfe3d4;
+  --sidebar-muted: #8fb09a;
+  --sidebar-hover: #16301f;
+  --color-surface: #151c18;
+  --color-neutral-50: #121915;
+  --color-neutral-100: #1f2924;
+  --color-neutral-200: #2b372f;
+  --color-neutral-300: #3a4940;
+  --color-neutral-400: #738279;
+  --color-neutral-500: #93a398;
+  --color-neutral-600: #b3c0b7;
+  --color-neutral-700: #cbd6ce;
+  --color-neutral-800: #dfe7e1;
+  --color-neutral-900: #f1f5f2;
+  --color-brand-50: #15291c;
+  --color-brand-200: #25502f;
+  --color-brand-500: #4fb36d;
+  --color-brand-600: #2a8749;
+  --color-brand-700: #7bd493;
+  --color-red-50: #2a1513;
+  --color-red-200: #5c2823;
+  --color-red-600: #dc4a3d;
+  --color-red-700: #ff9188;
+  --color-amber-50: #2a2110;
+  --color-amber-200: #5c4716;
+  --color-amber-600: #e0a030;
+  --color-amber-700: #f2bd5a;
+  --color-amber-800: #f7cb7a;
+  --color-sky-50: #10222c;
+  --color-sky-200: #1f4a5e;
+  --color-sky-700: #6cc4ea;
+  color-scheme: dark;
+}
+
+html {
+  font-size: 17px;
 }
 
 html,
@@ -37,8 +92,9 @@ body {
   background: var(--bg);
   color: var(--text);
   font-family: var(--font-sans);
-  font-size: 15px;
-  line-height: 1.5;
+  font-size: 1rem;
+  line-height: 1.55;
+  transition: background-color 0.2s ease, color 0.2s ease;
   -webkit-font-smoothing: antialiased;
 }
 

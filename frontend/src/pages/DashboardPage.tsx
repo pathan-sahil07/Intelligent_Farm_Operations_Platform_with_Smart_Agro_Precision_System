@@ -19,7 +19,7 @@ export default function DashboardPage() {
   if (!farmId) {
     return (
       <>
-        <PageHeader title={`Welcome, ${user?.fullName ?? ''}`} description="Your farm operations at a glance." />
+        <PageHeader showFarm={false} title={`Welcome, ${user?.fullName ?? ''}`} description="Your farm operations at a glance." />
         <NoFarm />
         {can('FARM_WRITE') && (
           <p className="text-center">
@@ -33,7 +33,7 @@ export default function DashboardPage() {
   const d = dashboard.data
   return (
     <>
-      <PageHeader title={farm?.name ?? 'Dashboard'} description="Today’s status across crops, irrigation, inventory, equipment and tasks." />
+      <PageHeader showFarm={false} title={farm?.name ?? 'Dashboard'} description="Today’s status across crops, irrigation, inventory, equipment and tasks." />
       {dashboard.isLoading ? (
         <Loading />
       ) : dashboard.error ? (

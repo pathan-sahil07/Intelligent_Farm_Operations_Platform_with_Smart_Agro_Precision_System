@@ -12,7 +12,7 @@ export default function AuditPage() {
   const q = useQuery({ queryKey: ['audit', page, entityType], queryFn: () => userApi.audit({ page, size: 25, entityType: entityType || undefined }) })
   return (
     <>
-      <PageHeader title="Audit log" description="Who changed what, and when." />
+      <PageHeader showFarm={false} title="Audit log" description="Who changed what, and when." />
       <Panel title="Events" actions={<input aria-label="Filter by entity type" className="field-control !w-48 !py-1.5" placeholder="Entity type…" value={entityType} onChange={(e) => { setEntityType(e.target.value); setPage(0) }} />}>
         <DataTable caption="Audit log" rows={q.data?.content} loading={q.isLoading} error={q.error} onRetry={() => q.refetch()} getKey={(a) => a.id} emptyTitle="No audit events"
           columns={[

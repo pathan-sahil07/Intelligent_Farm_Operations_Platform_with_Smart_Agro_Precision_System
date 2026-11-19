@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/Button'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { ApiError, toApiError } from '@/lib/axios'
 
-export type FieldType = 'text' | 'number' | 'date' | 'time' | 'select' | 'textarea' | 'email' | 'password'
+export type FieldType = 'text' | 'number' | 'date' | 'time' | 'select' | 'textarea' | 'email' | 'password' | 'tel'
 
 export interface FieldDef {
   name: string
@@ -89,6 +89,11 @@ function FormBody({ fields, initial, submitLabel, onClose, onSubmit }: Omit<Prop
                   return true
                 },
               }
+            : f.type === 'tel'
+              ? { validate: (v: string) => v === '' || /^\d{10}$/.test(v) || `${f.label} must be exactly 10 digits` }
+              : {}),
+          ...(f.type === 'tel'
+            ? { onChange: (e: { target: { value: string } }) => { e.target.value = e.target.value.replace(/\D/g, '').slice(0, 10) } }
             : {}),
         }
         return (
@@ -114,6 +119,8 @@ function FormBody({ fields, initial, submitLabel, onClose, onSubmit }: Omit<Prop
                 id={id}
                 className="field-control"
                 type={f.type ?? 'text'}
+                inputMode={f.type === 'tel' ? 'numeric' : undefined}
+                maxLength={f.type === 'tel' ? 10 : undefined}
                 step={f.type === 'number' ? (f.step ?? 'any') : undefined}
                 placeholder={f.placeholder}
                 aria-invalid={error ? true : undefined}

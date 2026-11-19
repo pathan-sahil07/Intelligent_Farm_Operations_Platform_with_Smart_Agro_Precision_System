@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { assistantApi } from '@/api/endpoints'
 import { errorMessage } from '@/lib/axios'
 
@@ -25,6 +25,11 @@ export default function AgriculturalChat() {
   const [question, setQuestion] = useState('')
   const [sending, setSending] = useState(false)
   const [error, setError] = useState('')
+  const endRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    endRef.current?.scrollIntoView?.({ behavior: 'smooth', block: 'end' })
+  }, [messages, sending])
 
   async function sendQuestion(value: string) {
     const text = value.trim()
@@ -73,6 +78,7 @@ export default function AgriculturalChat() {
         </span>
       </div>
 
+      <div className="farm-chat-body">
       <div className="farm-chat-intro">
         <span className="eyebrow">AGRICULTURAL KNOWLEDGE</span>
         <h3>How can we help your farm today?</h3>
@@ -133,6 +139,9 @@ export default function AgriculturalChat() {
             <span>Researching your question…</span>
           </div>
         )}
+        <div ref={endRef} />
+      </div>
+
       </div>
 
       {error && (

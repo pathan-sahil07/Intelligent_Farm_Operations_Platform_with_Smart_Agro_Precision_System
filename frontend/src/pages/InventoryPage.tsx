@@ -152,7 +152,7 @@ export default function InventoryPage() {
       <FormDialog open={supplier !== null} title={supplier === 'new' ? 'Add supplier' : 'Edit supplier'} fields={[
         { name: 'name', label: 'Name', required: true },
         { name: 'contactPerson', label: 'Contact person' },
-        { name: 'phone', label: 'Phone' },
+        { name: 'phone', label: 'Phone', type: 'tel', hint: '10 digits, no country code' },
         { name: 'email', label: 'Email', type: 'email' },
         { name: 'address', label: 'Address', type: 'textarea' },
       ]} initial={supplier && supplier !== 'new' ? { ...supplier } : {}} onClose={() => setSupplier(null)}

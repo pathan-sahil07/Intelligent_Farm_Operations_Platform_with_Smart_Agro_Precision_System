@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react'
 import { ArrowLeft, ExternalLink, MapPin, Pencil, Plus, Trash2 } from 'lucide-react'
+import { useQueryClient } from '@tanstack/react-query'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { Button } from '../../../components/ui/Button'
 import { Card } from '../../../components/ui/Card'
@@ -45,6 +46,8 @@ function FarmDetailPage() {
   const id = Number(farmId)
   const navigate = useNavigate()
   const { session } = useSession()
+  const queryClient = useQueryClient()
+  const refreshShared = () => void queryClient.invalidateQueries()
   const canManage = canManageFarms(session.role)
 
   const load = useCallback(
@@ -373,6 +376,7 @@ function FarmDetailPage() {
           setFarmModalOpen(false)
           show('Changes saved.')
           reload()
+          refreshShared()
         }}
         open={farmModalOpen}
         plottedAcres={summary.plottedAreaAcres}
@@ -386,6 +390,7 @@ function FarmDetailPage() {
           setPlotModal(null)
           show(mode === 'created' ? `${plot.name} was added.` : 'Plot saved.')
           reload()
+          refreshShared()
         }}
         open={plotModal !== null}
         plot={editingPlot}
@@ -441,7 +446,10 @@ function FarmDetailPage() {
             () => farmApi.deleteFarm(farm.id),
             '',
             () => setFarmDeleteOpen(false),
-            () => navigate(APP_ROUTES.farms, { state: { notice: `${farm.name} was deleted.` } }),
+            () => {
+              refreshShared()
+              navigate(APP_ROUTES.farms, { state: { notice: `${farm.name} was deleted.` } })
+            },
           )
         }
         open={farmDeleteOpen}

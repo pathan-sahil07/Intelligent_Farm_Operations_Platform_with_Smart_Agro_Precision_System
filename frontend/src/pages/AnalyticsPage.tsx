@@ -12,6 +12,7 @@ import { formatMoney, formatNumber } from '@/lib/format'
 
 const yearStart = () => `${new Date().getFullYear()}-01-01`
 const nowStr = () => new Date().toLocaleDateString('en-CA')
+const tipStyle = { background: 'var(--color-surface)', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--text-h)' }
 const REPORTS = ['production', 'irrigation', 'inventory', 'equipment', 'resources', 'costs']
 
 function Chart({ data, x, bars, empty }: { data: Record<string, unknown>[] | undefined; x: string; bars: { key: string; name: string; color: string }[]; empty: string }) {
@@ -20,8 +21,8 @@ function Chart({ data, x, bars, empty }: { data: Record<string, unknown>[] | und
     <div className="h-64" role="img" aria-label={bars.map((b) => b.name).join(', ')}>
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#e5e5e5" />
-          <XAxis dataKey={x} fontSize={12} /><YAxis fontSize={12} /><Tooltip /><Legend />
+          <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+          <XAxis dataKey={x} fontSize={12} tick={{ fill: 'var(--text)' }} /><YAxis fontSize={12} tick={{ fill: 'var(--text)' }} /><Tooltip contentStyle={tipStyle} /><Legend wrapperStyle={{ color: 'var(--text)' }} />
           {bars.map((b) => <Bar key={b.key} dataKey={b.key} name={b.name} fill={b.color} radius={[3, 3, 0, 0]} />)}
         </BarChart>
       </ResponsiveContainer>
@@ -71,7 +72,7 @@ export default function AnalyticsPage() {
         <Panel title="Yield by month (kg)">
           {prod.data?.byMonth.length ? (
             <div className="h-64" role="img" aria-label="Yield by month">
-              <ResponsiveContainer width="100%" height="100%"><LineChart data={prod.data.byMonth}><CartesianGrid strokeDasharray="3 3" stroke="#e5e5e5" /><XAxis dataKey="month" fontSize={12} /><YAxis fontSize={12} /><Tooltip /><Line dataKey="quantityKg" name="Yield (kg)" stroke="#2f7d32" strokeWidth={2} /></LineChart></ResponsiveContainer>
+              <ResponsiveContainer width="100%" height="100%"><LineChart data={prod.data.byMonth}><CartesianGrid strokeDasharray="3 3" stroke="var(--border)" /><XAxis dataKey="month" fontSize={12} tick={{ fill: 'var(--text)' }} /><YAxis fontSize={12} tick={{ fill: 'var(--text)' }} /><Tooltip contentStyle={tipStyle} /><Line dataKey="quantityKg" name="Yield (kg)" stroke="#2f7d32" strokeWidth={2} /></LineChart></ResponsiveContainer>
             </div>) : <EmptyState title="No harvests in this period" />}
         </Panel>
         <Panel title="Water used by crop (L)"><Chart data={irr.data?.byCrop} x="crop" bars={[{ key: 'liters', name: 'Litres', color: '#1d6fa5' }]} empty="No completed irrigation" /></Panel>

@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Plus, Sprout } from 'lucide-react'
+import { useQueryClient } from '@tanstack/react-query'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { Button } from '../../../components/ui/Button'
 import { Card } from '../../../components/ui/Card'
 import { Input } from '../../../components/ui/Input'
 import { Table } from '../../../components/ui/Table'
 import { farmPath } from '../../../constants/routes.constants'
+import { useFarm } from '../../../contexts/useFarm'
 import { useSession } from '../../../contexts/useSession'
 import { ROLE_LABELS } from '../../../contexts/session.constants'
 import { useNotice } from '../../../hooks/useNotice'
@@ -21,6 +23,8 @@ import { Toast } from './Toast'
 function FarmManagementPage() {
   const { role, userId } = useSession().session
   const canManage = canManageFarms(role)
+  const queryClient = useQueryClient()
+  const { farmId: activeFarmId, setFarmId } = useFarm()
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -87,6 +91,13 @@ function FarmManagementPage() {
       header: '',
       render: (farm: Farm) => (
         <span className="row-actions">
+          {farm.id === activeFarmId ? (
+            <span className="pill pill-active">In use</span>
+          ) : (
+            <Button size="sm" variant="ghost" onClick={() => setFarmId(farm.id)}>
+              Use this farm
+            </Button>
+          )}
           <Link className="button button-secondary button-sm" to={farmPath(farm.id)}>
             Open
             <span className="sr-only"> {farm.name}</span>
@@ -175,6 +186,8 @@ function FarmManagementPage() {
         onSaved={(farm) => {
           setModalOpen(false)
           show(`${farm.name} was added.`)
+          setFarmId(farm.id)
+          void queryClient.invalidateQueries()
           reload()
         }}
         open={modalOpen}

@@ -17,7 +17,7 @@ export default function UsersPage() {
   const roles = useQuery({ queryKey: ['roles'], queryFn: userApi.roles })
   return (
     <>
-      <PageHeader title="Users" description="Activate or deactivate accounts and assign roles." />
+      <PageHeader showFarm={false} title="Users" description="Activate or deactivate accounts and assign roles." />
       <Panel title="All users" actions={<input aria-label="Search users" className="field-control !w-56 !py-1.5" placeholder="Search name or email…" value={q} onChange={(e) => setQ(e.target.value)} />}>
         <DataTable caption="Users" rows={users.data?.content} loading={users.isLoading} error={users.error} onRetry={() => users.refetch()} getKey={(u) => u.id} emptyTitle="No users found"
           columns={[

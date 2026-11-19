@@ -7,7 +7,7 @@
   gap: 6px;
   margin-bottom: 14px;
   color: var(--ink-soft);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 650;
   text-decoration: none;
 }
@@ -23,7 +23,7 @@
   gap: 6px 18px;
   margin: -10px 0 18px;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .farm-meta a {
   display: inline-flex;
@@ -78,8 +78,8 @@
 }
 .area-bar-open,
 .legend-dot-open {
-  background: repeating-linear-gradient(135deg, #e9eee3 0 5px, #f6f8f2 5px 10px);
-  box-shadow: inset 0 0 0 1px #d6dece;
+  background: repeating-linear-gradient(135deg, var(--h-e9eee3) 0 5px, var(--h-f6f8f2) 5px 10px);
+  box-shadow: inset 0 0 0 1px var(--h-d6dece);
 }
 .area-legend {
   display: flex;
@@ -89,7 +89,7 @@
   padding: 0;
   list-style: none;
   color: var(--ink-soft);
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 .area-legend li {
   display: inline-flex;
@@ -175,7 +175,7 @@
 .field-hint {
   margin: 12px 0 0;
   color: var(--muted);
-  font-size: 10px;
+  font-size: 0.625rem;
   line-height: 1.5;
 }
 .form-grid > .field-hint {
@@ -194,14 +194,14 @@
 .inline-form {
   margin-bottom: 14px;
   padding: 16px;
-  border: 1px solid #dce8d2;
+  border: 1px solid var(--h-dce8d2);
   border-radius: 12px;
-  background: #f8fbf5;
+  background: var(--h-f8fbf5);
 }
 .inline-form-title {
   margin: 0 0 12px;
   color: var(--ink);
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 700;
 }
 .modal-panel-lg {
@@ -209,7 +209,7 @@
 }
 .confirm-body {
   color: var(--ink-soft);
-  font-size: 12px;
+  font-size: 0.75rem;
   line-height: 1.6;
 }
 .confirm-body p {
@@ -227,25 +227,25 @@
   gap: 10px;
   max-width: min(420px, calc(100vw - 32px));
   padding: 12px 12px 12px 14px;
-  border: 1px solid #cfe0c0;
+  border: 1px solid var(--h-cfe0c0);
   border-radius: 11px;
   background: var(--forest-950);
-  color: #edf5ed;
+  color: var(--h-edf5ed);
   box-shadow: 0 12px 36px rgba(15, 35, 18, 0.28);
-  font-size: 11px;
+  font-size: 0.6875rem;
   line-height: 1.45;
 }
 .toast > svg {
   flex: 0 0 auto;
-  color: #9acb69;
+  color: var(--h-9acb69);
 }
 .toast-error {
-  border-color: #f0c4b6;
-  background: #7d3724;
-  color: #fff;
+  border-color: var(--h-f0c4b6);
+  background: var(--h-7d3724);
+  color: var(--h-ffffff);
 }
 .toast-error > svg {
-  color: #ffd2c4;
+  color: var(--h-ffd2c4);
 }
 .toast-close {
   display: grid;

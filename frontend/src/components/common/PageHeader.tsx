@@ -1,9 +1,12 @@
 import type { ReactNode } from 'react'
+import { useFarm } from '@/contexts/useFarm'
 
-export function PageHeader({ title, description, actions }: { title: string; description?: string; actions?: ReactNode }) {
+export function PageHeader({ title, description, actions, showFarm = true }: { title: string; description?: string; actions?: ReactNode; showFarm?: boolean }) {
+  const { farm } = useFarm()
   return (
     <div className="flex flex-wrap items-start justify-between gap-4">
       <div>
+        {showFarm && farm && <p className="mb-1 text-xs font-semibold tracking-wider text-brand-600 uppercase">{farm.name}</p>}
         <h1 className="text-[1.75rem] leading-tight font-semibold tracking-tight text-neutral-900">{title}</h1>
         {description && <p className="mt-1.5 max-w-2xl text-sm text-neutral-500">{description}</p>}
       </div>
@@ -14,7 +17,7 @@ export function PageHeader({ title, description, actions }: { title: string; des
 
 export function Panel({ title, actions, children, className = '' }: { title?: string; actions?: ReactNode; children: ReactNode; className?: string }) {
   return (
-    <section className={`rounded-xl border border-neutral-200 bg-white shadow-sm ${className}`}>
+    <section className={`rounded-xl border border-neutral-200 bg-surface shadow-sm ${className}`}>
       {(title || actions) && (
         <header className="flex flex-wrap items-center justify-between gap-2 border-b border-neutral-100 px-5 py-4">
           {title && <h2 className="text-base font-semibold text-neutral-900">{title}</h2>}
@@ -29,7 +32,7 @@ export function Panel({ title, actions, children, className = '' }: { title?: st
 export function StatCard({ label, value, hint, tone = 'default' }: { label: string; value: ReactNode; hint?: string; tone?: 'default' | 'warning' | 'danger' }) {
   const color = tone === 'danger' ? 'text-red-700' : tone === 'warning' ? 'text-amber-700' : 'text-brand-700'
   return (
-    <div className="rounded-xl border border-neutral-200 bg-white p-5 shadow-sm">
+    <div className="rounded-xl border border-neutral-200 bg-surface p-5 shadow-sm">
       <p className="text-xs font-medium tracking-wide text-neutral-500 uppercase">{label}</p>
       <p className={`mt-2 text-2xl font-semibold ${color}`}>{value}</p>
       {hint && <p className="mt-0.5 text-xs text-neutral-500">{hint}</p>}

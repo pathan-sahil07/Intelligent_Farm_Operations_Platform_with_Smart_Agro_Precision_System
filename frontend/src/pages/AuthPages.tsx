@@ -11,7 +11,7 @@ import { errorMessage } from '@/lib/axios'
 function AuthShell({ title, subtitle, children }: { title: string; subtitle: string; children: React.ReactNode }) {
   return (
     <div className="grid min-h-svh place-items-center bg-gradient-to-br from-brand-50 to-soil-100 p-4">
-      <div className="w-full max-w-md rounded-2xl border border-neutral-200 bg-white p-7 shadow-lg">
+      <div className="w-full max-w-md rounded-2xl border border-neutral-200 bg-surface p-7 shadow-lg">
         <div className="flex items-center gap-2 text-brand-700">
           <Wheat aria-hidden="true" />
           <span className="font-semibold">Intelligent Farm Operations</span>
@@ -77,7 +77,7 @@ export function LoginPage() {
 const registerSchema = z.object({
   fullName: z.string().min(1, 'Full name is required').max(150),
   email: z.string().min(1, 'Email is required').email('Enter a valid email address'),
-  phone: z.string().max(40).optional(),
+  phone: z.string().regex(/^(\d{10})?$/, 'Phone number must be exactly 10 digits').optional(),
   password: z.string().min(8, 'Password must be at least 8 characters').max(72),
   role: z.enum(['FARM_OWNER', 'FIELD_WORKER']),
 })
@@ -106,7 +106,7 @@ export function RegisterPage() {
   const fields = [
     { name: 'fullName', label: 'Full name', type: 'text', auto: 'name' },
     { name: 'email', label: 'Email', type: 'email', auto: 'email' },
-    { name: 'phone', label: 'Phone (optional)', type: 'tel', auto: 'tel' },
+    { name: 'phone', label: 'Mobile number (optional)', type: 'tel', auto: 'tel' },
     { name: 'password', label: 'Password', type: 'password', auto: 'new-password' },
   ] as const
 
@@ -116,7 +116,15 @@ export function RegisterPage() {
         {fields.map((f) => (
           <div className="field" key={f.name}>
             <label className="field-label" htmlFor={f.name}>{f.label}</label>
-            <input id={f.name} type={f.type} autoComplete={f.auto} className="field-control" aria-invalid={errors[f.name] ? true : undefined} {...register(f.name)} />
+            <input
+              id={f.name}
+              type={f.type}
+              autoComplete={f.auto}
+              className="field-control"
+              aria-invalid={errors[f.name] ? true : undefined}
+              {...(f.name === 'phone' ? { inputMode: 'numeric' as const, maxLength: 10, placeholder: '10-digit mobile number' } : {})}
+              {...register(f.name, f.name === 'phone' ? { onChange: (e) => { e.target.value = e.target.value.replace(/\D/g, '').slice(0, 10) } } : undefined)}
+            />
             {errors[f.name] && <span className="field-error" role="alert">{errors[f.name]?.message}</span>}
           </div>
         ))}

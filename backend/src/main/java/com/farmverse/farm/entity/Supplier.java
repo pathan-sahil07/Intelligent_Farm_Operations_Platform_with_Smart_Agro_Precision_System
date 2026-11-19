@@ -19,6 +19,7 @@ public class Supplier {
     @NotNull private Long farmId;
     @NotBlank @Size(max = 150) private String name;
     private String contactPerson;
+    @jakarta.validation.constraints.Pattern(regexp = "^$|^\\d{10}$", message = "Phone number must be exactly 10 digits")
     private String phone;
     @jakarta.validation.constraints.Email private String email;
     private String address;

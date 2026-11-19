@@ -13,7 +13,7 @@ export default function ProfilePage() {
   if (!user) return null
   return (
     <>
-      <PageHeader title="My profile" />
+      <PageHeader showFarm={false} title="My profile" />
       <Panel>
         <dl className="grid gap-3 text-sm sm:grid-cols-2">
           <div><dt className="text-neutral-500">Name</dt><dd className="font-medium">{user.fullName}</dd></div>
@@ -28,7 +28,7 @@ export default function ProfilePage() {
       </Panel>
       <FormDialog open={dlg === 'profile'} title="Edit profile" fields={[
         { name: 'fullName', label: 'Full name', required: true },
-        { name: 'phone', label: 'Phone' },
+        { name: 'phone', label: 'Phone', type: 'tel', hint: '10 digits, no country code' },
       ]} initial={{ fullName: user.fullName, phone: user.phone }} onClose={() => setDlg(null)}
         onSubmit={async (v) => { setUser(await authApi.updateProfile({ fullName: String(v.fullName), phone: v.phone ? String(v.phone) : undefined })); toast.success('Profile updated') }} />
       <FormDialog open={dlg === 'password'} title="Change password" description="At least 8 characters." fields={[

@@ -14,7 +14,7 @@ public final class UserDtos {
             @NotBlank @Size(max = 150) String fullName,
             @NotBlank @Email @Size(max = 190) String email,
             @NotBlank @Size(min = 8, max = 72, message = "Password must be 8 to 72 characters") String password,
-            @Size(max = 40) String phone,
+            @jakarta.validation.constraints.Pattern(regexp = "^$|^\\d{10}$", message = "Phone number must be exactly 10 digits") String phone,
             String role) {
     }
 
@@ -44,7 +44,7 @@ public final class UserDtos {
     public record RoleChangeRequest(@NotBlank String role) {
     }
 
-    public record ProfileRequest(@NotBlank @Size(max = 150) String fullName, @Size(max = 40) String phone) {
+    public record ProfileRequest(@NotBlank @Size(max = 150) String fullName, @jakarta.validation.constraints.Pattern(regexp = "^$|^\\d{10}$", message = "Phone number must be exactly 10 digits") String phone) {
     }
 
     public record PasswordChangeRequest(

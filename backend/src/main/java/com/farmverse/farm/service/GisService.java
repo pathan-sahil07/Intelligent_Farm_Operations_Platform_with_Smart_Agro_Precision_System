@@ -63,6 +63,8 @@ public class GisService {
         return collection(features);
     }
 
+    private static final double BOUNDARY_AREA_TOLERANCE = 0.10;
+
     @Transactional
     public Map<String, Object> setBoundary(Long plotId, JsonNode geometry) {
         validatePolygon(geometry);
@@ -78,6 +80,18 @@ public class GisService {
                     new MapSqlParameterSource("g", geojson), Boolean.class);
             if (!Boolean.TRUE.equals(valid)) {
                 throw new BadRequestException("Boundary is not a valid polygon (self-intersecting or degenerate)");
+            }
+            List<Map<String, Object>> sizes = jdbc.queryForList(
+                    "select area_acres as declared, ST_Area(ST_SetSRID(ST_GeomFromGeoJSON(:g), 4326)::geography) / " + ACRES + " as computed from plots where id = :id",
+                    new MapSqlParameterSource("g", geojson).addValue("id", plotId));
+            if (sizes.isEmpty()) throw new ResourceNotFoundException("Plot not found with ID: " + plotId);
+            Object declaredValue = sizes.get(0).get("declared");
+            double declaredAcres = declaredValue instanceof Number n ? n.doubleValue() : 0;
+            double drawnAcres = ((Number) sizes.get(0).get("computed")).doubleValue();
+            if (declaredAcres > 0 && Math.abs(drawnAcres - declaredAcres) / declaredAcres > BOUNDARY_AREA_TOLERANCE) {
+                throw new BadRequestException(String.format(java.util.Locale.ROOT,
+                        "Boundary covers %.2f acres but this plot is declared as %.2f acres; it must be within %d%% of the declared size",
+                        drawnAcres, declaredAcres, (int) (BOUNDARY_AREA_TOLERANCE * 100)));
             }
             int updated = jdbc.update("update plots set boundary = ST_SetSRID(ST_GeomFromGeoJSON(:g), 4326) where id = :id",
                     new MapSqlParameterSource("g", geojson).addValue("id", plotId));

@@ -30,7 +30,7 @@ export default function RolesPage() {
   const perms = useQuery({ queryKey: ['permissions'], queryFn: userApi.permissions })
   return (
     <>
-      <PageHeader title="Roles & permissions" description="Changes apply to users on their next request. Farm-level access is still enforced separately." />
+      <PageHeader showFarm={false} title="Roles & permissions" description="Changes apply to users on their next request. Farm-level access is still enforced separately." />
       {roles.isLoading || perms.isLoading ? <Loading /> : roles.error || perms.error ? <ErrorState error={roles.error ?? perms.error} /> : (
         <div className="space-y-4">
           {roles.data?.map((r) => <RoleCard key={r.name + r.permissions.join()} role={r} all={(perms.data ?? []).map((p) => p.code)} />)}

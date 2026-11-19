@@ -1,5 +1,5 @@
 import { Suspense, useState } from 'react'
-import { NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import {
   BarChart3, Bell, Bot, CloudSun, Droplets, History, LayoutDashboard, LogOut, Map as MapIcon, Menu, Package,
@@ -9,8 +9,8 @@ import { notificationApi } from '@/api/endpoints'
 import { Loading } from '@/components/common/StateViews'
 import type { Permission } from '@/config/permissions'
 import { ROLE_LABELS_BY_NAME, isRoleName } from '@/config/permissions'
+import { ThemeToggle } from './ThemeToggle'
 import { useAuth } from '@/contexts/useAuth'
-import { FarmSwitcher } from './FarmSwitcher'
 
 interface NavItem {
   to: string
@@ -54,7 +54,7 @@ function NavGroup({ items, onNavigate }: { items: NavItem[]; onNavigate: () => v
             onClick={onNavigate}
             className={({ isActive }) =>
               `flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition ${
-                isActive ? 'bg-brand-600 text-white' : 'text-brand-100 hover:bg-brand-700'
+                isActive ? 'bg-brand-600 text-white' : 'text-[var(--sidebar-text)] hover:bg-[var(--sidebar-hover)]'
               }`
             }
           >
@@ -69,6 +69,7 @@ function NavGroup({ items, onNavigate }: { items: NavItem[]; onNavigate: () => v
 export function AppLayout() {
   const { user, logout, can } = useAuth()
   const navigate = useNavigate()
+  const wide = useLocation().pathname.startsWith('/assistant')
   const [open, setOpen] = useState(false)
   const close = () => setOpen(false)
   const { data: unread } = useQuery({
@@ -80,10 +81,10 @@ export function AppLayout() {
 
   return (
     <div className="min-h-svh lg:flex">
-      {open && <div className="fixed inset-0 z-30 bg-neutral-900/50 lg:hidden" onClick={close} aria-hidden="true" />}
+      {open && <div className="fixed inset-0 z-30 bg-black/50 lg:hidden" onClick={close} aria-hidden="true" />}
       <aside
         aria-label="Main navigation"
-        className={`fixed inset-y-0 left-0 z-40 flex w-64 flex-col gap-1 overflow-y-auto bg-brand-900 p-4 transition-transform lg:sticky lg:top-0 lg:h-svh lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-40 flex w-64 flex-col gap-1 overflow-y-auto bg-[var(--sidebar)] p-4 transition-transform lg:sticky lg:top-0 lg:h-svh lg:translate-x-0 ${
           open ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
@@ -92,24 +93,24 @@ export function AppLayout() {
             <Wheat size={22} aria-hidden="true" />
             <span className="text-base leading-tight font-semibold">Smart Agro<br />Farm Platform</span>
           </div>
-          <button className="text-brand-100 lg:hidden" onClick={close} aria-label="Close menu">
+          <button className="text-[var(--sidebar-text)] lg:hidden" onClick={close} aria-label="Close menu">
             <X size={20} />
           </button>
         </div>
         <nav className="flex flex-col gap-1">
           <NavGroup items={MAIN} onNavigate={close} />
-          {showAdmin && <p className="mt-4 mb-1 px-3 text-xs font-semibold tracking-wider text-brand-200 uppercase">Administration</p>}
+          {showAdmin && <p className="mt-4 mb-1 px-3 text-xs font-semibold tracking-wider text-[var(--sidebar-muted)] uppercase">Administration</p>}
           <NavGroup items={ADMIN} onNavigate={close} />
         </nav>
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-20 flex flex-wrap items-center gap-3 border-b border-neutral-200 bg-white/95 px-4 py-3 backdrop-blur sm:px-8">
+        <header className="sticky top-0 z-20 flex flex-wrap items-center gap-3 border-b border-neutral-200 bg-surface/95 px-4 py-3 backdrop-blur sm:px-8">
           <button className="rounded-md p-1.5 hover:bg-neutral-100 lg:hidden" onClick={() => setOpen(true)} aria-label="Open menu">
             <Menu size={20} />
           </button>
-          <FarmSwitcher />
           <div className="ml-auto flex items-center gap-2">
+            <ThemeToggle />
             <button
               className="relative rounded-md p-2 hover:bg-neutral-100"
               onClick={() => navigate('/notifications')}
@@ -141,9 +142,9 @@ export function AppLayout() {
             </button>
           </div>
         </header>
-        <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-8 sm:py-8">
+        <main className={wide ? 'w-full flex-1 p-3 sm:p-5' : 'mx-auto w-full max-w-[1400px] flex-1 px-4 py-6 sm:px-10 sm:py-9'}>
           <Suspense fallback={<Loading />}>
-            <div className="flex flex-col gap-6">
+            <div className={wide ? 'flex h-full flex-col' : 'flex flex-col gap-7'}>
               <Outlet />
             </div>
           </Suspense>

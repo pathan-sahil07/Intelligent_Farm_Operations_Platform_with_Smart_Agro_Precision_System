@@ -14,7 +14,7 @@ export default function NotificationsPage() {
   const q = useQuery({ queryKey: ['notifications', unreadOnly], queryFn: () => notificationApi.list({ unreadOnly: unreadOnly || undefined, size: 50 }) })
   return (
     <>
-      <PageHeader title="Notifications" description="Low stock, maintenance, irrigation, harvest, task and weather alerts."
+      <PageHeader showFarm={false} title="Notifications" description="Low stock, maintenance, irrigation, harvest, task and weather alerts."
         actions={<div className="flex gap-2">
           <Button variant="secondary" onClick={() => act(() => notificationApi.refresh(), 'Notifications refreshed')}>Check now</Button>
           <Button variant="secondary" onClick={() => act(() => notificationApi.readAll(), 'All marked as read')}>Mark all read</Button>
